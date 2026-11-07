@@ -8,5 +8,9 @@ export function getAdminSupabase() {
     throw new AppError("CONFIG_MISSING", "Tác vụ máy chủ chưa được cấu hình.");
   return createClient(publicConfig.supabaseUrl, key, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) =>
+        fetch(input, { ...init, signal: AbortSignal.timeout(15000) }),
+    },
   });
 }

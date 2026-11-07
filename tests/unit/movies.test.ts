@@ -6,6 +6,27 @@ import {
 } from "@/features/movies/normalize";
 import { safeMediaUrl } from "@/features/movies/media-policy";
 describe("KKPhim data boundary", () => {
+  it("uses episode IDs instead of array positions and rejects ambiguous duplicate slugs", () => {
+    const normalize = (rows: unknown[]) =>
+      normalizeDetail({
+        movie: { slug: "a", name: "A" },
+        episodes: [{ server_name: "vs", server_data: rows }],
+      }).servers[0].episodes;
+    const a = { _id: "episode-a", name: "A" },
+      b = { _id: "episode-b", name: "B" };
+    expect(normalize([a, b])[1].key).toBe(normalize([b])[0].key);
+    const seasons = normalize([
+      { slug: "tap-1", filename: "Season 1 Episode 1" },
+      { slug: "tap-1", filename: "Season 2 Episode 1" },
+    ]);
+    expect(seasons).toHaveLength(2);
+    expect(seasons[0].key).not.toBe(seasons[1].key);
+    expect(
+      normalize([{ slug: "tap-1", filename: "Season 2 Episode 1" }])[0].key,
+    ).toBe(seasons[1].key);
+    expect(normalize([{ name: "No stable identity" }])).toHaveLength(0);
+    expect(normalize([{ slug: "tap-1" }, { slug: "tap-1" }])).toHaveLength(0);
+  });
   it("accepts wrapped category and country responses from the live API", () => {
     expect(
       normalizeCatalog({

@@ -98,6 +98,10 @@ export default async function Browse({
             Tìm phim
           </button>
         </div>
+        <p className="muted">
+          Khi tìm theo tên, chọn “Tất cả loại phim”. Bạn vẫn có thể kết hợp thể
+          loại, quốc gia và năm.
+        </p>
       </form>
       <section className="movie-section">
         <div className="section-heading">
@@ -112,11 +116,15 @@ export default async function Browse({
         </div>
         {!result.ok ? (
           <Feedback
-            title="Chưa tải được phim"
+            title={
+              result.code === "VALIDATION"
+                ? "Điều chỉnh bộ lọc"
+                : "Chưa tải được phim"
+            }
             message={result.message}
             kind="error"
           >
-            <RetryLink />
+            {result.code !== "VALIDATION" && <RetryLink />}
           </Feedback>
         ) : result.data.items.length ? (
           <>

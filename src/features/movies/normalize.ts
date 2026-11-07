@@ -1,4 +1,10 @@
-import type { MovieSummary, MovieDetail, Page, CatalogOption } from "./types";
+import type {
+  MovieSummary,
+  MovieDetail,
+  Page,
+  CatalogOption,
+  Episode,
+} from "./types";
 import { safeMediaUrl } from "./media-policy";
 type Row = Record<string, unknown>;
 const obj = (v: unknown): Row =>
@@ -91,18 +97,41 @@ export function normalizeDetail(input: unknown): MovieDetail {
       return {
         key: encodeURIComponent(label),
         label,
-        episodes: arr(s.server_data).map((v, j) => {
-          const e = obj(v),
-            slug = text(e.slug) || text(e.filename) || `episode-${j + 1}`;
-          return {
-            key: slug,
-            slug,
-            label: text(e.name) || slug,
-            hlsUrl: safeMediaUrl(e.link_m3u8, "hls"),
-            embedUrl: safeMediaUrl(e.link_embed, "embed"),
-          };
-        }),
+        episodes: normalizeEpisodes(s.server_data),
       };
     }),
   };
+}
+function normalizeEpisodes(input: unknown): Episode[] {
+  const rows = arr(input).map(obj),
+    slugs = new Map<string, number>();
+  for (const row of rows) {
+    const slug = text(row.slug);
+    if (slug) slugs.set(slug, (slugs.get(slug) || 0) + 1);
+  }
+  const candidates = rows.flatMap((row) => {
+    const id = text(row._id) || text(row.id),
+      slug = text(row.slug),
+      filename = text(row.filename).normalize("NFC").trim();
+    const key = id
+      ? "id:" + id
+      : filename
+        ? (slug ? slug + "::" : "file:") + filename
+        : slug && slugs.get(slug) === 1
+          ? slug
+          : null;
+    if (!key || key.length > 300) return [];
+    return [
+      {
+        key,
+        slug: slug || key,
+        label: text(row.name) || slug || filename,
+        hlsUrl: safeMediaUrl(row.link_m3u8, "hls"),
+        embedUrl: safeMediaUrl(row.link_embed, "embed"),
+      },
+    ];
+  });
+  const counts = new Map<string, number>();
+  for (const e of candidates) counts.set(e.key, (counts.get(e.key) || 0) + 1);
+  return candidates.filter((e) => counts.get(e.key) === 1);
 }

@@ -58,7 +58,7 @@ where user_id = 'UUID_TAI_KHOAN_BAN_SO_HUU';
 
 Đăng nhập lại và mở `/admin/nguoi-dung`. Không hardcode email trong mã; không cấp admin cho tài khoản không thuộc quyền kiểm soát của bạn. UI không có chức năng cấp quyền admin hoặc tác động admin khác.
 
-Khóa user có hiệu lực ngay ở DB guard/RLS, kể cả access token cũ. Đồng bộ ban/unban Supabase Auth có thể cần thử lại; UI báo riêng trạng thái này. Dùng nút thử lại hoặc `npm run auth:sync` để xử lý hàng đợi, không thay trực tiếp trạng thái ở Auth dashboard mà bỏ qua user_access.
+Khóa user có hiệu lực ngay ở DB guard/RLS, kể cả access token cũ. Đồng bộ ban/unban Supabase Auth có thể cần thử lại; UI báo riêng trạng thái này. Dùng nút thử lại hoặc `npm run auth:sync` (Node 24+) để xử lý hàng đợi, không thay trực tiếp trạng thái ở Auth dashboard mà bỏ qua user_access. Worker dùng lease riêng cho mỗi user, giữ revision sau khi hoàn tất và đồng bộ lại nếu trạng thái đổi trong lúc gọi Auth. Nếu timeout, đợi ít nhất 2 phút cho lease hết hạn rồi thử lại; tác vụ pending không bị xóa. Với production, lên lịch chạy lệnh này định kỳ bằng scheduler của máy chủ để các lỗi tạm thời được xử lý lại.
 
 ## 6. Kiểm tra dữ liệu và bảo mật trên project TEST
 

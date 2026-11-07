@@ -45,7 +45,7 @@ begin
  update public.user_access set status=coalesce(p_status,status),membership=coalesce(p_membership,membership),updated_at=clock_timestamp()where user_id=p_target returning * into after_row;
  insert into public.admin_audit_logs(actor_id,target_id,action,before_value,after_value)values(actor,p_target,'update_user',to_jsonb(before_row),to_jsonb(after_row));
  if before_row.status<>after_row.status then insert into public.auth_sync_jobs(user_id,status)values(p_target,after_row.status)on conflict(user_id)do update set status=excluded.status,revision=public.auth_sync_jobs.revision+1,updated_at=clock_timestamp();end if;
- return jsonb_build_object('authSyncPending',exists(select 1 from public.auth_sync_jobs where user_id=p_target));
+ return jsonb_build_object('authSyncPending',exists(select 1 from public.auth_sync_jobs where user_id=p_target and pending));
 end$$;
 
 create function public.admin_list_users(p_search text default '',p_membership text default null,p_status text default null,p_page integer default 1)returns jsonb language plpgsql security definer set search_path='' as $$
@@ -53,9 +53,47 @@ declare result jsonb;total bigint;page_number integer:=greatest(1,least(coalesce
 begin
  if not private.is_admin(auth.uid())then raise exception 'Admin required' using errcode='42501';end if;
  select count(*)into total from public.user_access a join public.profiles p on p.id=a.user_id join auth.users u on u.id=a.user_id where(p.display_name ilike search_term or u.email ilike search_term)and(p_membership is null or a.membership=p_membership)and(p_status is null or a.status=p_status);
- select coalesce(jsonb_agg(to_jsonb(rows)),'[]'::jsonb)into result from(select a.user_id as id,p.display_name as "displayName",u.email,u.created_at as "createdAt",a.role,a.membership,a.status,exists(select 1 from public.auth_sync_jobs j where j.user_id=a.user_id)as "authSyncPending" from public.user_access a join public.profiles p on p.id=a.user_id join auth.users u on u.id=a.user_id where(p.display_name ilike search_term or u.email ilike search_term)and(p_membership is null or a.membership=p_membership)and(p_status is null or a.status=p_status)order by u.created_at desc,a.user_id limit 20 offset(page_number-1)*20)rows;
+ select coalesce(jsonb_agg(to_jsonb(rows)),'[]'::jsonb)into result from(select a.user_id as id,p.display_name as "displayName",u.email,u.created_at as "createdAt",a.role,a.membership,a.status,exists(select 1 from public.auth_sync_jobs j where j.user_id=a.user_id and j.pending)as "authSyncPending" from public.user_access a join public.profiles p on p.id=a.user_id join auth.users u on u.id=a.user_id where(p.display_name ilike search_term or u.email ilike search_term)and(p_membership is null or a.membership=p_membership)and(p_status is null or a.status=p_status)order by u.created_at desc,a.user_id limit 20 offset(page_number-1)*20)rows;
  return jsonb_build_object('items',result,'page',page_number,'totalPages',greatest(1,ceil(total/20.0)));
 end$$;
 
 revoke all on function public.begin_watch(uuid,text,text,uuid),public.record_watch(uuid,bigint,double precision,double precision,boolean),public.clear_watch(uuid),public.admin_update_user(uuid,text,text),public.admin_list_users(text,text,text,integer)from public,anon;
 grant execute on function public.begin_watch(uuid,text,text,uuid),public.record_watch(uuid,bigint,double precision,double precision,boolean),public.clear_watch(uuid),public.admin_update_user(uuid,text,text),public.admin_list_users(text,text,text,integer)to authenticated;
+
+-- Durable state: completed rows stay in place so revisions never reset.
+-- Lease duration exceeds the worker's 15-second HTTP request deadline.
+create function public.claim_auth_sync(p_user uuid,p_token uuid)returns jsonb language plpgsql security definer set search_path='' as $$
+declare j public.auth_sync_jobs;
+begin
+ if p_token is null then raise exception 'Lease token required';end if;
+ select * into j from public.auth_sync_jobs where user_id=p_user for update;
+ if not found or not j.pending then return jsonb_build_object('state','idle');end if;
+ if j.lease_token is not null and j.lease_until>clock_timestamp() then return jsonb_build_object('state','busy');end if;
+ update public.auth_sync_jobs set lease_token=p_token,lease_until=clock_timestamp()+interval '2 minutes' where user_id=p_user;
+ return jsonb_build_object('state','claimed','job',jsonb_build_object('status',j.status,'revision',j.revision));
+end$$;
+
+create function public.finish_auth_sync(p_user uuid,p_token uuid,p_revision bigint)returns jsonb language plpgsql security definer set search_path='' as $$
+declare j public.auth_sync_jobs;
+begin
+ select * into j from public.auth_sync_jobs where user_id=p_user for update;
+ if not found then return jsonb_build_object('state','lost');end if;
+ if p_token is null or j.lease_token is distinct from p_token or j.lease_until<=clock_timestamp() then
+  -- A late provider write may have happened. Requeue the authoritative desired
+  -- state even if another worker had already marked its revision applied.
+  update public.auth_sync_jobs set revision=revision+1,updated_at=clock_timestamp() where user_id=p_user;
+  return jsonb_build_object('state','lost');
+ end if;
+ if j.revision<>p_revision then
+  update public.auth_sync_jobs set lease_until=clock_timestamp()+interval '2 minutes' where user_id=p_user;
+  return jsonb_build_object('state','changed','job',jsonb_build_object('status',j.status,'revision',j.revision));
+ end if;
+ update public.auth_sync_jobs set applied_revision=revision,lease_token=null,lease_until=null where user_id=p_user;
+ return jsonb_build_object('state','done');
+end$$;
+
+create function public.release_auth_sync(p_user uuid,p_token uuid)returns void language sql security definer set search_path='' as $$
+ update public.auth_sync_jobs set lease_token=null,lease_until=null where user_id=p_user and lease_token=p_token;
+$$;
+revoke all on function public.claim_auth_sync(uuid,uuid),public.finish_auth_sync(uuid,uuid,bigint),public.release_auth_sync(uuid,uuid)from public,anon,authenticated;
+grant execute on function public.claim_auth_sync(uuid,uuid),public.finish_auth_sync(uuid,uuid,bigint),public.release_auth_sync(uuid,uuid)to service_role;

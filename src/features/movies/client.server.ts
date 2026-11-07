@@ -43,6 +43,11 @@ export async function requestJson(
 export async function listMovies(
   query: BrowseQuery,
 ): Promise<Result<Page<MovieSummary>>> {
+  if (query.keyword && query.type)
+    return fail(
+      "VALIDATION",
+      "Nguồn phim chưa hỗ trợ tìm theo tên kết hợp loại phim. Hãy chọn “Tất cả loại phim” để tìm theo tên, hoặc bỏ từ khóa để lọc theo loại.",
+    );
   const p = new URLSearchParams({
     page: String(query.page),
     sort_field: query.sort === "year" ? "year" : "modified.time",

@@ -4,7 +4,7 @@ Website xem phim tiếng Việt dùng **Next.js 16 + Supabase**, giao diện **H
 
 ## Chạy tại máy
 
-Yêu cầu Node.js 20.9+ (đã kiểm tra bằng Node 24), npm.
+Yêu cầu Node.js 24+ (đã kiểm tra với Node 24 LTS), npm. Worker Auth dùng khả năng chạy TypeScript của Node 24.
 
 ```powershell
 npm ci

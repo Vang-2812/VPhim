@@ -1,5 +1,10 @@
 import { it, expect } from "vitest";
-import { requestJson } from "@/features/movies/client.server";
+import { requestJson, listMovies } from "@/features/movies/client.server";
+it("explicitly rejects provider-unsupported keyword/type combinations", async () => {
+  expect(
+    await listMovies({ keyword: "batman", type: "phim-bo", page: 1 }),
+  ).toMatchObject({ ok: false, code: "VALIDATION" });
+});
 it("returns a recoverable error after at most one retry on a failed provider", async () => {
   let attempts = 0;
   const r = await requestJson("/test", async () => {

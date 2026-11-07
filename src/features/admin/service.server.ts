@@ -3,7 +3,7 @@ import { requireAdmin } from "@/features/auth/context.server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getAdminSupabase } from "@/lib/supabase/admin.server";
 import { errorResult, fail, type Result } from "@/lib/result";
-import { processAuthJob } from "./auth-sync";
+import { syncSupabaseAuth } from "./auth-sync";
 import type { Page } from "@/features/movies/types";
 import type { AdminUserRow } from "./types";
 export async function listUsers(input: {
@@ -37,33 +37,7 @@ export async function syncAuthRestriction(
   try {
     await requireAdmin();
     const c = getAdminSupabase();
-    const completed = await processAuthJob({
-      get: async () => {
-        const { data, error } = await c
-          .from("auth_sync_jobs")
-          .select("status,revision")
-          .eq("user_id", userId)
-          .maybeSingle();
-        if (error) throw error;
-        return data;
-      },
-      apply: async (status) => {
-        const { error } = await c.auth.admin.updateUserById(userId, {
-          ban_duration: status === "blocked" ? "876000h" : "none",
-        });
-        if (error) throw error;
-      },
-      complete: async (revision) => {
-        const { data, error } = await c
-          .from("auth_sync_jobs")
-          .delete()
-          .eq("user_id", userId)
-          .eq("revision", revision)
-          .select("user_id");
-        if (error) throw error;
-        return Boolean(data?.length);
-      },
-    });
+    const completed = await syncSupabaseAuth(c, userId);
     if (!completed)
       return fail(
         "SAVE_FAILED",

@@ -4,7 +4,7 @@ VPhim là ứng dụng Next.js có SSR, Server Actions, Proxy và Supabase; **kh
 
 ## Môi trường hỗ trợ
 
-Chọn dịch vụ chạy Next.js Node runtime, ví dụ Vercel, hoặc máy chủ Node 20.9+ tương thích. Cài bằng `npm ci`, build `npm run build`, chạy `npm start` (mặc định loopback 127.0.0.1:3000; reverse proxy của máy chủ chuyển tiếp vào port này).
+Chọn dịch vụ chạy Next.js Node runtime, ví dụ Vercel, hoặc máy chủ Node 24+ (đã kiểm tra với Node 24 LTS). Worker Auth chạy TypeScript trực tiếp bằng Node; phiên bản tối thiểu của dự án là 24, cao hơn minimum của Next.js và Supabase SDK. Cài bằng `npm ci`, build `npm run build`, chạy `npm start` (mặc định loopback 127.0.0.1:3000; reverse proxy của máy chủ chuyển tiếp vào port này).
 
 Chưa tạo deployment, tài khoản cloud hay tên miền vì người dùng hiện yêu cầu chuẩn bị code và hướng dẫn, chưa có Supabase. Không tự chuyển framework sang Vinext hoặc SPA để khớp một hosting khác.
 

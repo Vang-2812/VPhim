@@ -76,11 +76,21 @@ export async function requestPasswordReset(
     const email = String(form.get("email") || "").trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return fail("VALIDATION", "Vui lòng nhập email hợp lệ.");
-    await client.auth.resetPasswordForEmail(email, {
+    const { error } = await client.auth.resetPasswordForEmail(email, {
       redirectTo:
         getServerConfig(process.env).appOrigin +
         "/auth/callback?next=/dat-lai-mat-khau",
     });
+    if (
+      error &&
+      !["user_not_found", "user_banned", "email_not_confirmed"].includes(
+        error.code || "",
+      )
+    )
+      return fail(
+        "SAVE_FAILED",
+        "Tạm thời chưa gửi được hướng dẫn. Vui lòng thử lại sau.",
+      );
     return { ok: true, data: null };
   } catch (e) {
     return errorResult(e);
