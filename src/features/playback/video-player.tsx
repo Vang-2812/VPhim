@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type Hls from "hls.js";
 import type { PlaybackSelection } from "./selection";
 import type { PlaybackSample } from "./types";
 import { resumePosition } from "./progress-client";
+
 export function VideoPlayer({
   selection,
   initialPosition,
@@ -20,8 +21,38 @@ export function VideoPlayer({
     [error, setError] = useState(""),
     [embed, setEmbed] = useState(selection.mode === "embed"),
     [retry, setRetry] = useState(0),
-    restored = useRef(false);
+    restored = useRef(false),
+    fallbackTriggered = useRef(false);
+
   sampleCallback.current = onSample;
+
+  useEffect(() => {
+    fallbackTriggered.current = false;
+  }, [selection.episode.key, retry]);
+
+  const handleError = useCallback(
+    (fallbackMessage: string) => {
+      if (selection.episode.embedUrl) {
+        if (!fallbackTriggered.current) {
+          fallbackTriggered.current = true;
+          setEmbed(true);
+          sampleCallback.current({
+            position: null,
+            duration: null,
+            ended: false,
+            reason: "pause",
+          });
+        }
+      } else {
+        setError(fallbackMessage);
+      }
+    },
+    [selection.episode.embedUrl],
+  );
+
+  const errorHandlerRef = useRef(handleError);
+  errorHandlerRef.current = handleError;
+
   useEffect(() => {
     if (embed) return;
     const el = video.current;
@@ -36,7 +67,7 @@ export function VideoPlayer({
       void import("hls.js").then(({ default: HlsClass }) => {
         if (cancelled) return;
         if (!HlsClass.isSupported()) {
-          setError("Trình duyệt chưa hỗ trợ nguồn HLS này.");
+          errorHandlerRef.current("Trình duyệt chưa hỗ trợ nguồn HLS này.");
           return;
         }
         hls = new HlsClass();
@@ -44,7 +75,9 @@ export function VideoPlayer({
         hls.attachMedia(el);
         hls.on(HlsClass.Events.ERROR, (_event, data) => {
           if (data.fatal)
-            setError("Chưa phát được nguồn này. Thử lại hoặc đổi nguồn phát.");
+            errorHandlerRef.current(
+              "Chưa phát được nguồn này. Thử lại hoặc đổi nguồn phát.",
+            );
         });
       });
     return () => {
@@ -55,6 +88,7 @@ export function VideoPlayer({
       el.load();
     };
   }, [selection.episode.hlsUrl, embed, retry]);
+
   useEffect(() => {
     const el = video.current;
     if (el && initialPosition && el.readyState >= 1 && !restored.current) {
@@ -66,6 +100,7 @@ export function VideoPlayer({
       restored.current = true;
     }
   }, [initialPosition]);
+
   function emit(reason: PlaybackSample["reason"]) {
     const el = video.current;
     if (el && Number.isFinite(el.duration) && el.duration > 0)
@@ -76,6 +111,7 @@ export function VideoPlayer({
         reason,
       });
   }
+
   if (embed)
     return (
       <>
@@ -90,10 +126,38 @@ export function VideoPlayer({
           />
         </div>
         <p className="watch-status">
-          Nguồn nhúng chỉ lưu tập phim; không lưu được vị trí chính xác.
+          {selection.episode.hlsUrl ? (
+            <>
+              Đang phát từ nguồn nhúng dự phòng do nguồn trực tiếp tạm thời không khả dụng.{" "}
+              <button
+                type="button"
+                className="text-link"
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  font: "inherit",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  color: "inherit",
+                }}
+                onClick={() => {
+                  fallbackTriggered.current = false;
+                  setEmbed(false);
+                  setError("");
+                  setRetry((v) => v + 1);
+                }}
+              >
+                Thử lại nguồn trực tiếp
+              </button>
+            </>
+          ) : (
+            "Nguồn nhúng chỉ lưu tập phim; không lưu được vị trí chính xác."
+          )}
         </p>
       </>
     );
+
   return (
     <div className="video-stage">
       {error ? (
@@ -137,7 +201,7 @@ export function VideoPlayer({
           onTimeUpdate={() => emit("time")}
           onPause={() => emit("pause")}
           onEnded={() => emit("ended")}
-          onError={() => setError("Nguồn phát tạm thời không khả dụng.")}
+          onError={() => handleError("Nguồn phát tạm thời không khả dụng.")}
           onLoadedMetadata={() => {
             if (video.current && initialPosition && !restored.current) {
               video.current.currentTime = resumePosition(
