@@ -27,18 +27,21 @@ const mockMovie: MovieDetail = {
       episodes: [
         {
           key: "tap-01",
+          slug: "tap-01",
           label: "Tập 01",
           hlsUrl: "https://example.com/tap1.m3u8",
           embedUrl: "https://example.com/tap1.html",
         },
         {
           key: "tap-02",
+          slug: "tap-02",
           label: "Tập 02",
           hlsUrl: "https://example.com/tap2.m3u8",
           embedUrl: "https://example.com/tap2.html",
         },
         {
           key: "tap-03",
+          slug: "tap-03",
           label: "Tập 03",
           hlsUrl: "https://example.com/tap3.m3u8",
           embedUrl: "https://example.com/tap3.html",

@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { Search, UserRound, Clapperboard } from "lucide-react";
+import { Search, UserRound } from "lucide-react";
 import { getOptionalMember } from "@/features/auth/context.server";
+import { VPhimLogo } from "@/components/ui/logo";
 export async function SiteHeader() {
   const member = await getOptionalMember();
   return (
     <header className="site-header">
       <div className="header-inner">
         <Link href="/" className="wordmark" aria-label="VPhim trang chủ">
-          <Clapperboard size={25} strokeWidth={1.7} />
-          <span>VPhim</span>
+          <VPhimLogo size={28} />
         </Link>
         <nav className="desktop-nav" aria-label="Điều hướng chính">
           <Link href="/kham-pha">Khám phá</Link>

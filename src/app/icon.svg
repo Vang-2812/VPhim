@@ -1,0 +1,28 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="vphim-icon-amber" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fbbf24"/>
+      <stop offset="0.5" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="vphim-icon-accent" x1="16" y1="8" x2="24" y2="22" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fef3c7"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Squircle dark background -->
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="#1c1917" stroke="#292524" stroke-width="1.5"/>
+  
+  <!-- Film strip perforations -->
+  <rect x="3.5" y="5" width="2" height="3" rx="0.75" fill="#44403c"/>
+  <rect x="3.5" y="11" width="2" height="3" rx="0.75" fill="#44403c"/>
+  <rect x="3.5" y="17" width="2" height="3" rx="0.75" fill="#44403c"/>
+  <rect x="3.5" y="23" width="2" height="3" rx="0.75" fill="#44403c"/>
+  
+  <!-- Faceted Letter V with play triangle -->
+  <path d="M9 7L16 23C16.3 23.6 17.1 23.6 17.4 23.1L21 15.5L16.5 11.5L9 7Z" fill="url(#vphim-icon-amber)"/>
+  <path d="M24 7L16.8 23L20.2 15.5L25.5 9.2L24 7Z" fill="url(#vphim-icon-accent)"/>
+  <path d="M15 11L21.5 15L15 19V11Z" fill="#1c1917" opacity="0.95"/>
+  <path d="M16 12.5L20.2 15L16 17.5V12.5Z" fill="url(#vphim-icon-amber)"/>
+</svg>

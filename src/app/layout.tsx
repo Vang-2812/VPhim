@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
+import { VPhimLogo } from "@/components/ui/logo";
 import Link from "next/link";
 import "./globals.css";
 export const metadata: Metadata = {
@@ -11,6 +12,10 @@ export const metadata: Metadata = {
   },
   description:
     "Khám phá phim mới, lưu phim yêu thích và tiếp tục câu chuyện của bạn cùng VPhim.",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 export default function RootLayout({
   children,
@@ -29,8 +34,8 @@ export default function RootLayout({
         <SiteHeader />
         <main id="main">{children}</main>
         <footer className="site-footer">
-          <Link href="/" className="footer-brand">
-            VPhim
+          <Link href="/" className="footer-brand" aria-label="VPhim">
+            <VPhimLogo size={22} />
           </Link>
           <p>Câu chuyện tiếp theo, do bạn chọn.</p>
           <nav aria-label="Liên kết cuối trang">
