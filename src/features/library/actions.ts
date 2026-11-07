@@ -5,7 +5,6 @@ import { requireMember } from "@/features/auth/context.server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getMovie } from "@/features/movies/client.server";
 import { ensureMovieRef } from "./movie-ref.server";
-import { getPlaylists } from "./service.server";
 import { errorResult, fail, type Result } from "@/lib/result";
 const uuid = z.string().uuid(),
   nameSchema = z.string().trim().min(1).max(80);
@@ -164,27 +163,26 @@ export async function getLibraryState(slug: string) {
   try {
     const m = await requireMember(),
       c = await createServerSupabase();
-    const { data: ref } = await c
-      .from("movie_refs")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
-    const { data: fav } = ref
-      ? await c
-          .from("favorites")
-          .select("movie_ref_id")
-          .eq("user_id", m.userId)
-          .eq("movie_ref_id", ref.id)
-          .maybeSingle()
-      : { data: null };
-    const lists = await getPlaylists();
+    const [favorite, lists] = await Promise.all([
+      c
+        .from("favorites")
+        .select("movie_ref_id,movie_refs!inner(slug)")
+        .eq("user_id", m.userId)
+        .eq("movie_refs.slug", slug)
+        .maybeSingle(),
+      c
+        .from("playlists")
+        .select("id,name")
+        .eq("user_id", m.userId)
+        .order("created_at", { ascending: false }),
+    ]);
+    if (favorite.error) throw favorite.error;
+    if (lists.error) throw lists.error;
     return {
       ok: true as const,
       data: {
-        selected: Boolean(fav),
-        playlists: lists.ok
-          ? lists.data.map((p) => ({ id: p.id, name: p.name }))
-          : [],
+        selected: Boolean(favorite.data),
+        playlists: (lists.data || []).map((p) => ({ id: p.id, name: p.name })),
       },
     };
   } catch (e) {

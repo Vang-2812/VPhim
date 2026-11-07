@@ -8,7 +8,7 @@ import { isAuthConfigured } from "@/lib/config/public";
 
 export function LibraryControls({
   slug,
-  initialMember = false,
+  initialMember,
   initialSelected = false,
   initialPlaylists = [],
 }: {
@@ -18,20 +18,21 @@ export function LibraryControls({
   initialPlaylists?: { id: string; name: string }[];
 }) {
   const router = useRouter(),
-    [member, setMember] = useState(initialMember),
+    [member, setMember] = useState(initialMember ?? false),
     [selected, setSelected] = useState(initialSelected),
-    [lists, setLists] = useState<{ id: string; name: string }[]>(initialPlaylists),
+    [lists, setLists] =
+      useState<{ id: string; name: string }[]>(initialPlaylists),
     [notice, setNotice] = useState(""),
     [pending, start] = useTransition();
 
   useEffect(() => {
-    setMember(initialMember);
+    setMember(initialMember ?? false);
     setSelected(initialSelected);
     setLists(initialPlaylists);
   }, [initialMember, initialSelected, initialPlaylists]);
 
   useEffect(() => {
-    if (initialMember) return;
+    if (initialMember !== undefined) return;
     if (!isAuthConfigured()) return;
     let active = true;
     getLibraryState(slug).then((r) => {
