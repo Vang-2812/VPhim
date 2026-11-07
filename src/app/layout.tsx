@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { SiteHeader } from "@/components/layout/site-header";
+import { NavigationProgress } from "@/components/ui/navigation-progress";
 import Link from "next/link";
 import "./globals.css";
 export const metadata: Metadata = {
@@ -18,6 +20,9 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body>
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
         <a className="skip-link" href="#main">
           Đến nội dung chính
         </a>

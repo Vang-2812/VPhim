@@ -1105,9 +1105,15 @@ legend {
 .admin-filters select {
   width: auto;
 }
+@keyframes skeleton-pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.5; }
+}
 .skeleton {
   background: var(--color-paper-3);
   border-radius: var(--radius-card);
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
 }
 .skeleton-heading {
   height: 45px;

@@ -40,6 +40,15 @@ export async function requestJson(
     "Nguồn phim đang phản hồi chậm. Vui lòng thử lại sau.",
   );
 }
+
+const fetchCachedList = unstable_cache(
+  async (fullPath: string): Promise<Result<unknown>> => {
+    return requestJson(fullPath);
+  },
+  ["kkphim-list"],
+  { revalidate: 120 },
+);
+
 export async function listMovies(
   query: BrowseQuery,
 ): Promise<Result<Page<MovieSummary>>> {
@@ -70,8 +79,8 @@ export async function listMovies(
     query.sort !== "year"
   )
     path = "/danh-sach/phim-moi-cap-nhat";
-  const result = await requestJson(path + "?" + p);
-  if (!result.ok) return result;
+  const result = await fetchCachedList(path + "?" + p);
+  if (!result.ok) return result as Result<never>;
   try {
     return { ok: true, data: normalizeList(result.data) };
   } catch {
