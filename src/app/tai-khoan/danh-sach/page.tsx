@@ -1,6 +1,7 @@
 import { getPlaylists } from "@/features/library/service.server";
 import { PlaylistEditor } from "@/features/library/playlist-editor";
 import { Feedback } from "@/components/ui/feedback";
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Danh sách của bạn" };
 export default async function Playlists() {
   const r = await getPlaylists();

@@ -3,6 +3,7 @@ import { getFavorites } from "@/features/library/service.server";
 import { RemoveFavorite } from "@/features/library/playlist-editor";
 import { Feedback } from "@/components/ui/feedback";
 import { Pagination } from "@/components/ui/pagination";
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Phim yêu thích" };
 export default async function Favorites({
   searchParams,

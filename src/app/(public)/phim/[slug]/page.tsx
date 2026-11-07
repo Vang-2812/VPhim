@@ -4,6 +4,8 @@ import { Play, ChevronRight } from "lucide-react";
 import { getMovie } from "@/features/movies/client.server";
 import { Feedback, RetryLink } from "@/components/ui/feedback";
 import { LibraryControls } from "@/features/library/library-controls";
+import { getOptionalMember } from "@/features/auth/context.server";
+import { getLibraryState } from "@/features/library/actions";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -34,6 +36,16 @@ export default async function Detail({
     );
   }
   const m = r.data;
+  const member = await getOptionalMember();
+  let initialSelected = false;
+  let initialPlaylists: { id: string; name: string }[] = [];
+  if (member) {
+    const libState = await getLibraryState(m.slug);
+    if (libState.ok) {
+      initialSelected = libState.data.selected;
+      initialPlaylists = libState.data.playlists;
+    }
+  }
   return (
     <div className="container page-space">
       <Link href="/kham-pha" className="breadcrumb">
@@ -60,7 +72,12 @@ export default async function Detail({
               <Play size={18} fill="currentColor" />
               Xem phim
             </Link>
-            <LibraryControls slug={m.slug} />
+            <LibraryControls
+              slug={m.slug}
+              initialMember={Boolean(member)}
+              initialSelected={initialSelected}
+              initialPlaylists={initialPlaylists}
+            />
           </div>
           <h2 className="small-heading">Câu chuyện</h2>
           <p className="synopsis">

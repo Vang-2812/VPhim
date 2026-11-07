@@ -1,16 +1,37 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Heart, ListPlus } from "lucide-react";
 import { getLibraryState, setFavorite, setPlaylistMovie } from "./actions";
 import { isAuthConfigured } from "@/lib/config/public";
-export function LibraryControls({ slug }: { slug: string }) {
-  const [member, setMember] = useState(false),
-    [selected, setSelected] = useState(false),
-    [lists, setLists] = useState<{ id: string; name: string }[]>([]),
+
+export function LibraryControls({
+  slug,
+  initialMember = false,
+  initialSelected = false,
+  initialPlaylists = [],
+}: {
+  slug: string;
+  initialMember?: boolean;
+  initialSelected?: boolean;
+  initialPlaylists?: { id: string; name: string }[];
+}) {
+  const router = useRouter(),
+    [member, setMember] = useState(initialMember),
+    [selected, setSelected] = useState(initialSelected),
+    [lists, setLists] = useState<{ id: string; name: string }[]>(initialPlaylists),
     [notice, setNotice] = useState(""),
     [pending, start] = useTransition();
+
   useEffect(() => {
+    setMember(initialMember);
+    setSelected(initialSelected);
+    setLists(initialPlaylists);
+  }, [initialMember, initialSelected, initialPlaylists]);
+
+  useEffect(() => {
+    if (initialMember) return;
     if (!isAuthConfigured()) return;
     let active = true;
     getLibraryState(slug).then((r) => {
@@ -23,8 +44,10 @@ export function LibraryControls({ slug }: { slug: string }) {
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [slug, initialMember]);
+
   const login = "/dang-nhap?next=" + encodeURIComponent("/phim/" + slug);
+
   return (
     <div className="library-controls">
       {member ? (
@@ -58,6 +81,10 @@ export function LibraryControls({ slug }: { slug: string }) {
               onChange={(e) => {
                 const id = e.target.value;
                 e.target.value = "";
+                if (id === "__new__") {
+                  router.push("/tai-khoan/danh-sach");
+                  return;
+                }
                 if (id)
                   start(async () => {
                     const r = await setPlaylistMovie(id, slug, true);
@@ -73,6 +100,7 @@ export function LibraryControls({ slug }: { slug: string }) {
                   {p.name}
                 </option>
               ))}
+              <option value="__new__">+ Tạo danh sách mới…</option>
             </select>
           ) : (
             <Link className="button secondary" href="/tai-khoan/danh-sach">
