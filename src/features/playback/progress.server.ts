@@ -1,5 +1,5 @@
 import "server-only";
-import { requireMember } from "@/features/auth/context.server";
+import { getOptionalMember, requireMember } from "@/features/auth/context.server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { errorResult, type Result } from "@/lib/result";
 import type { Page } from "@/features/movies/types";
@@ -52,6 +52,39 @@ export async function getContinueWatching(
         items,
         page: p,
         totalPages: Math.max(1, Math.ceil((count || 0) / 12)),
+      },
+    };
+  } catch (e) {
+    return errorResult(e);
+  }
+}
+
+export async function getMovieResume(
+  slug: string,
+): Promise<Result<{ episodeKey: string; serverKey: string } | null>> {
+  try {
+    const m = await getOptionalMember();
+    if (!m) return { ok: true, data: null };
+    const c = await createServerSupabase();
+    const { data: ref } = await c
+      .from("movie_refs")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!ref) return { ok: true, data: null };
+    const { data, error } = await c
+      .from("watch_resume")
+      .select("episode_key,server_key")
+      .eq("user_id", m.userId)
+      .eq("movie_ref_id", ref.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return { ok: true, data: null };
+    return {
+      ok: true,
+      data: {
+        episodeKey: data.episode_key,
+        serverKey: data.server_key,
       },
     };
   } catch (e) {

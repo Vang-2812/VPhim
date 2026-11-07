@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getMovie } from "@/features/movies/client.server";
 import { selectPlayback } from "@/features/playback/selection";
 import { WatchScreen } from "@/features/playback/watch-screen";
+import { getMovieResume } from "@/features/playback/progress.server";
 import { getOptionalMember } from "@/features/auth/context.server";
 import { Feedback, RetryLink } from "@/components/ui/feedback";
 export const dynamic = "force-dynamic";
@@ -33,8 +34,17 @@ export default async function Watch({
       </div>
     );
   }
-  const p = await searchParams,
-    s = selectPlayback(r.data, { serverKey: p.server, episodeKey: p.episode });
+  const p = await searchParams;
+  let serverKey = p.server;
+  let episodeKey = p.episode;
+  if (!episodeKey) {
+    const resume = await getMovieResume(slug);
+    if (resume.ok && resume.data) {
+      episodeKey = resume.data.episodeKey;
+      serverKey = serverKey || resume.data.serverKey;
+    }
+  }
+  const s = selectPlayback(r.data, { serverKey, episodeKey });
   return (
     <div className="container page-space">
       {s.ok ? (

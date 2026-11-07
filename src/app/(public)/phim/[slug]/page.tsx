@@ -6,6 +6,7 @@ import { Feedback, RetryLink } from "@/components/ui/feedback";
 import { LibraryControls } from "@/features/library/library-controls";
 import { getOptionalMember } from "@/features/auth/context.server";
 import { getLibraryState } from "@/features/library/actions";
+import { getMovieResume } from "@/features/playback/progress.server";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -39,12 +40,35 @@ export default async function Detail({
   const member = await getOptionalMember();
   let initialSelected = false;
   let initialPlaylists: { id: string; name: string }[] = [];
+  let resumeState: { episodeKey: string; serverKey: string } | null = null;
   if (member) {
-    const libState = await getLibraryState(m.slug);
+    const [libState, resume] = await Promise.all([
+      getLibraryState(m.slug),
+      getMovieResume(m.slug),
+    ]);
     if (libState.ok) {
       initialSelected = libState.data.selected;
       initialPlaylists = libState.data.playlists;
     }
+    if (resume.ok && resume.data) {
+      resumeState = resume.data;
+    }
+  }
+
+  let watchHref = "/xem/" + m.slug;
+  let watchLabel = "Xem phim";
+  if (resumeState) {
+    watchHref =
+      "/xem/" +
+      m.slug +
+      "?" +
+      new URLSearchParams({
+        server: resumeState.serverKey,
+        episode: resumeState.episodeKey,
+      });
+    const s = m.servers.find((srv) => srv.key === resumeState?.serverKey);
+    const ep = s?.episodes.find((e) => e.key === resumeState?.episodeKey);
+    watchLabel = ep ? "Tiếp tục " + ep.label : "Tiếp tục xem";
   }
   return (
     <div className="container page-space">
@@ -68,9 +92,9 @@ export default async function Detail({
               ))}
           </div>
           <div className="detail-actions">
-            <Link className="button" href={"/xem/" + m.slug}>
+            <Link className="button" href={watchHref}>
               <Play size={18} fill="currentColor" />
-              Xem phim
+              {watchLabel}
             </Link>
             <LibraryControls
               slug={m.slug}
