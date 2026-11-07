@@ -515,6 +515,96 @@ legend {
   font-size: 12px;
   color: var(--color-muted);
 }
+.legal-heading {
+  padding: var(--space-xl) 0;
+  max-width: 800px;
+}
+.legal-kicker {
+  color: var(--color-accent);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-md);
+}
+.legal-heading h1 {
+  font-size: clamp(32px, 5vw, 56px);
+  margin-bottom: var(--space-lg);
+}
+.legal-heading > p:not(.legal-kicker) {
+  margin-top: var(--space-md);
+  color: var(--color-ink-2);
+  max-width: 65ch;
+}
+.legal-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: var(--space-2xl);
+  border-top: 1px solid var(--color-rule);
+  padding-top: var(--space-xl);
+}
+.legal-nav {
+  align-self: start;
+  display: grid;
+  gap: var(--space-sm);
+}
+.legal-nav > p {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-bottom: var(--space-sm);
+}
+.legal-nav a {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: 14px;
+  padding: var(--space-xs) 0;
+}
+.legal-nav a span {
+  color: var(--color-accent);
+}
+.legal-content {
+  max-width: 72ch;
+  min-width: 0;
+}
+.legal-content section {
+  scroll-margin-top: var(--space-xl);
+  margin-bottom: var(--space-2xl);
+}
+.legal-content h2 {
+  font-size: 23px;
+  margin-bottom: var(--space-lg);
+}
+.legal-content p,
+.legal-content li {
+  color: var(--color-ink-2);
+  line-height: 1.85;
+}
+.legal-content p + p,
+.legal-content ul {
+  margin-top: var(--space-md);
+}
+.legal-content li + li {
+  margin-top: var(--space-xs);
+}
+.legal-content a,
+.auth-terms a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.auth-terms {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+@media (max-width: 800px) {
+  .legal-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-xl);
+  }
+  .legal-nav {
+    border-bottom: 1px solid var(--color-rule);
+    padding-bottom: var(--space-lg);
+  }
+}
 .page-heading {
   display: flex;
   align-items: center;
@@ -1106,9 +1196,15 @@ legend {
   width: auto;
 }
 @keyframes skeleton-pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 0.9; }
-  100% { opacity: 0.5; }
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
 .skeleton {
   background: var(--color-paper-3);

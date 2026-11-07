@@ -150,6 +150,12 @@ export function AuthForm({
       {(mode === "login" || mode === "register") && (
         <>
           <div className="form-divider">hoặc</div>
+          <p className="auth-terms">
+            Trước khi tiếp tục, vui lòng đọc{" "}
+            <Link href="/dieu-khoan">Điều khoản sử dụng</Link> và{" "}
+            <Link href="/dieu-khoan#du-lieu">thông tin về dữ liệu cá nhân</Link>
+            .
+          </p>
           {configured ? (
             <a
               className="button secondary"

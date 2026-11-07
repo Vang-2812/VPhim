@@ -41,6 +41,7 @@ export default function RootLayout({
           <nav aria-label="Liên kết cuối trang">
             <Link href="/kham-pha">Khám phá phim</Link>
             <Link href="/tai-khoan">Tài khoản</Link>
+            <Link href="/dieu-khoan">Điều khoản & Bản quyền</Link>
             <a href="https://kkphim.com" target="_blank" rel="noreferrer">
               Nguồn phim: KKPhim
             </a>
