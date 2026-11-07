@@ -2,8 +2,20 @@ import Link from "next/link";
 import { Search, UserRound } from "lucide-react";
 import { getOptionalMember } from "@/features/auth/context.server";
 import { VPhimLogo } from "@/components/ui/logo";
-export async function SiteHeader() {
+import { Suspense } from "react";
+async function HeaderAccount() {
   const member = await getOptionalMember();
+  return (
+    <Link
+      href={member ? "/tai-khoan" : "/dang-nhap"}
+      className="header-account"
+    >
+      <UserRound size={17} />
+      <span>{member ? "Tài khoản" : "Đăng nhập"}</span>
+    </Link>
+  );
+}
+export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -24,13 +36,16 @@ export async function SiteHeader() {
           >
             <Search size={20} />
           </Link>
-          <Link
-            href={member ? "/tai-khoan" : "/dang-nhap"}
-            className="header-account"
+          <Suspense
+            fallback={
+              <span className="header-account" aria-busy="true">
+                <UserRound size={17} />
+                <span>Đang tải…</span>
+              </span>
+            }
           >
-            <UserRound size={17} />
-            <span>{member ? "Tài khoản" : "Đăng nhập"}</span>
-          </Link>
+            <HeaderAccount />
+          </Suspense>
         </div>
       </div>
       <nav className="mobile-nav" aria-label="Điều hướng trên điện thoại">

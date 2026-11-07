@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { ArrowUpRight, Play, ChevronRight } from "lucide-react";
 import { listMovies, getMovie } from "@/features/movies/client.server";
 import { MovieGrid } from "@/features/movies/movie-grid";
@@ -88,7 +89,9 @@ export default async function Home() {
             </Link>
           ))}
         </div>
-        <ContinueStrip />
+        <Suspense fallback={null}>
+          <ContinueStrip />
+        </Suspense>
         <section className="movie-section">
           <div className="section-heading">
             <div>

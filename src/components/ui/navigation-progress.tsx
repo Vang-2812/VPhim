@@ -8,9 +8,11 @@ export function NavigationProgress() {
   const [active, setActive] = useState(false);
   const [progress, setProgress] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const previousRoute = useRef("");
 
   // When pathname or searchParams change, navigation has completed.
   useEffect(() => {
+    previousRoute.current = window.location.pathname + window.location.search;
     if (active) {
       setProgress(100);
       const doneTimeout = setTimeout(() => {
@@ -76,6 +78,9 @@ export function NavigationProgress() {
     }
 
     function handlePopState() {
+      const route = window.location.pathname + window.location.search;
+      if (route === previousRoute.current) return;
+      previousRoute.current = route;
       startProgress();
     }
 

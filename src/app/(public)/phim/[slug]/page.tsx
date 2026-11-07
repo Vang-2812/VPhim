@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Play, ChevronRight } from "lucide-react";
 import { getMovie } from "@/features/movies/client.server";
@@ -7,6 +8,7 @@ import { LibraryControls } from "@/features/library/library-controls";
 import { getOptionalMember } from "@/features/auth/context.server";
 import { getLibraryState } from "@/features/library/actions";
 import { getMovieResume } from "@/features/playback/progress.server";
+import type { MovieDetail } from "@/features/movies/types";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -37,39 +39,6 @@ export default async function Detail({
     );
   }
   const m = r.data;
-  const member = await getOptionalMember();
-  let initialSelected = false;
-  let initialPlaylists: { id: string; name: string }[] = [];
-  let resumeState: { episodeKey: string; serverKey: string } | null = null;
-  if (member) {
-    const [libState, resume] = await Promise.all([
-      getLibraryState(m.slug),
-      getMovieResume(m.slug),
-    ]);
-    if (libState.ok) {
-      initialSelected = libState.data.selected;
-      initialPlaylists = libState.data.playlists;
-    }
-    if (resume.ok && resume.data) {
-      resumeState = resume.data;
-    }
-  }
-
-  let watchHref = "/xem/" + m.slug;
-  let watchLabel = "Xem phim";
-  if (resumeState) {
-    watchHref =
-      "/xem/" +
-      m.slug +
-      "?" +
-      new URLSearchParams({
-        server: resumeState.serverKey,
-        episode: resumeState.episodeKey,
-      });
-    const s = m.servers.find((srv) => srv.key === resumeState?.serverKey);
-    const ep = s?.episodes.find((e) => e.key === resumeState?.episodeKey);
-    watchLabel = ep ? "Tiếp tục " + ep.label : "Tiếp tục xem";
-  }
   return (
     <div className="container page-space">
       <Link href="/kham-pha" className="breadcrumb">
@@ -91,18 +60,15 @@ export default async function Detail({
                 <span key={i}>{v}</span>
               ))}
           </div>
-          <div className="detail-actions">
-            <Link className="button" href={watchHref}>
-              <Play size={18} fill="currentColor" />
-              {watchLabel}
-            </Link>
-            <LibraryControls
-              slug={m.slug}
-              initialMember={Boolean(member)}
-              initialSelected={initialSelected}
-              initialPlaylists={initialPlaylists}
-            />
-          </div>
+          <Suspense
+            fallback={
+              <div className="detail-actions" role="status">
+                Đang tải tùy chọn xem…
+              </div>
+            }
+          >
+            <DetailActions movie={m} />
+          </Suspense>
           <h2 className="small-heading">Câu chuyện</h2>
           <p className="synopsis">
             {m.description || "Nguồn phim chưa cung cấp phần giới thiệu."}
@@ -157,6 +123,55 @@ export default async function Detail({
           />
         )}
       </section>
+    </div>
+  );
+}
+async function DetailActions({ movie: m }: { movie: MovieDetail }) {
+  const member = await getOptionalMember();
+  let initialSelected = false;
+  let initialPlaylists: { id: string; name: string }[] = [];
+  let resumeState: { episodeKey: string; serverKey: string } | null = null;
+  if (member) {
+    const [libState, resume] = await Promise.all([
+      getLibraryState(m.slug),
+      getMovieResume(m.slug),
+    ]);
+    if (libState.ok) {
+      initialSelected = libState.data.selected;
+      initialPlaylists = libState.data.playlists;
+    }
+    if (resume.ok && resume.data) {
+      resumeState = resume.data;
+    }
+  }
+
+  let watchHref = "/xem/" + m.slug;
+  let watchLabel = "Xem phim";
+  if (resumeState) {
+    watchHref =
+      "/xem/" +
+      m.slug +
+      "?" +
+      new URLSearchParams({
+        server: resumeState.serverKey,
+        episode: resumeState.episodeKey,
+      });
+    const s = m.servers.find((srv) => srv.key === resumeState?.serverKey);
+    const ep = s?.episodes.find((e) => e.key === resumeState?.episodeKey);
+    watchLabel = ep ? "Tiếp tục " + ep.label : "Tiếp tục xem";
+  }
+  return (
+    <div className="detail-actions">
+      <Link className="button" href={watchHref}>
+        <Play size={18} fill="currentColor" />
+        {watchLabel}
+      </Link>
+      <LibraryControls
+        slug={m.slug}
+        initialMember={Boolean(member)}
+        initialSelected={initialSelected}
+        initialPlaylists={initialPlaylists}
+      />
     </div>
   );
 }

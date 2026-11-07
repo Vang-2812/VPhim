@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isAuthConfigured, publicConfig } from "@/lib/config/public";
+import { createTimedFetch } from "@/lib/supabase/timed-fetch";
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   if (!isAuthConfigured()) return response;
@@ -8,6 +9,7 @@ export async function proxy(request: NextRequest) {
     publicConfig.supabaseUrl!,
     publicConfig.supabasePublishableKey!,
     {
+      global: { fetch: createTimedFetch("proxy") },
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll(values) {
@@ -20,7 +22,7 @@ export async function proxy(request: NextRequest) {
       },
     },
   );
-  await client.auth.getUser();
+  await client.auth.getClaims();
   return response;
 }
 export const config = {

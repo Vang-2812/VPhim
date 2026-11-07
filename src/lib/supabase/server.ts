@@ -1,9 +1,11 @@
 import "server-only";
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { publicConfig } from "@/lib/config/public";
 import { AppError } from "@/lib/result";
-export async function createServerSupabase() {
+import { createTimedFetch } from "./timed-fetch";
+export const createServerSupabase = cache(async () => {
   if (!publicConfig.supabaseUrl || !publicConfig.supabasePublishableKey)
     throw new AppError(
       "CONFIG_MISSING",
@@ -14,6 +16,7 @@ export async function createServerSupabase() {
     publicConfig.supabaseUrl,
     publicConfig.supabasePublishableKey,
     {
+      global: { fetch: createTimedFetch("server") },
       cookies: {
         getAll: () => store.getAll(),
         setAll(values) {
@@ -28,4 +31,4 @@ export async function createServerSupabase() {
       },
     },
   );
-}
+});

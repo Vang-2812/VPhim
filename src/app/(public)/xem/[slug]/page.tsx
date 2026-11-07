@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import type { MovieDetail } from "@/features/movies/types";
 import { notFound } from "next/navigation";
 import { getMovie } from "@/features/movies/client.server";
 import { selectPlayback } from "@/features/playback/selection";
@@ -35,32 +37,58 @@ export default async function Watch({
     );
   }
   const p = await searchParams;
+  return (
+    <div className="container page-space">
+      <Suspense
+        fallback={
+          <div role="status">
+            <h1>{r.data.title}</h1>
+            <p className="muted">Đang chọn tập và khôi phục vị trí xem…</p>
+            <div
+              className="skeleton"
+              style={{ aspectRatio: "16 / 9", marginTop: "var(--space-lg)" }}
+            />
+          </div>
+        }
+      >
+        <WatchContent movie={r.data} requested={p} />
+      </Suspense>
+    </div>
+  );
+}
+async function WatchContent({
+  movie,
+  requested: p,
+}: {
+  movie: MovieDetail;
+  requested: { server?: string; episode?: string };
+}) {
   let serverKey = p.server;
   let episodeKey = p.episode;
   if (!episodeKey) {
-    const resume = await getMovieResume(slug);
+    const resume = await getMovieResume(movie.slug);
     if (resume.ok && resume.data) {
       episodeKey = resume.data.episodeKey;
       serverKey = serverKey || resume.data.serverKey;
     }
   }
-  const s = selectPlayback(r.data, { serverKey, episodeKey });
+  const s = selectPlayback(movie, { serverKey, episodeKey });
   return (
-    <div className="container page-space">
+    <>
       {s.ok ? (
         <WatchScreen
           key={s.data.server.key + "/" + s.data.episode.key}
-          movie={r.data}
+          movie={movie}
           selection={s.data}
           member={Boolean(await getOptionalMember())}
         />
       ) : (
         <Feedback title="Chọn lại tập phim" message={s.message}>
-          <Link className="button" href={"/phim/" + slug}>
+          <Link className="button" href={"/phim/" + movie.slug}>
             Xem danh sách tập
           </Link>
         </Feedback>
       )}
-    </div>
+    </>
   );
 }
