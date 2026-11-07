@@ -163,12 +163,15 @@ export async function getLibraryState(slug: string) {
   try {
     const m = await requireMember(),
       c = await createServerSupabase();
+    const movie = await getMovie(slug);
+    if (!movie.ok) return movie;
     const [favorite, lists] = await Promise.all([
       c
         .from("favorites")
         .select("movie_ref_id,movie_refs!inner(slug)")
         .eq("user_id", m.userId)
         .eq("movie_refs.slug", slug)
+        .eq("movie_refs.provider_id", movie.data.id)
         .maybeSingle(),
       c
         .from("playlists")

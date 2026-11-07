@@ -4,12 +4,15 @@ Ngày 2026-11-07. Các mục của lần bàn giao đầu bên dưới là lịc
 
 ## Cập nhật: điều khoản và hiệu năng
 
-- Baseline đọc lại: `6b739d1`, 42 tests qua trước thay đổi. Hiện **58/58 tests trong 22 files** và **5/5 SQL/RLS suites** qua; TypeScript qua. Build production đã exit 0; kết quả cuối sau review cần dựa trên lần build mới nhất.
+- Baseline đọc lại: `6b739d1`, 42 tests qua trước thay đổi. Sau review và lượt sửa cuối: **60/60 tests trong 23 files**, **5/5 SQL/RLS suites**, TypeScript và production build đều qua.
 - Trang `/dieu-khoan` có nội dung VPhim riêng, contact đã xác nhận, liên kết footer/Auth và mục lục. Browser đã kiểm tra desktop và mobile 390px: không tràn ngang, anchor bản quyền và mailto đúng. Không coi nội dung điều khoản là bảo đảm miễn trách nhiệm hay đã có quyền khai thác phim.
 - Claims + DB access guard, cookie refresh, diagnostic redaction, request budgets, duplicate slug và batch progress có tests. Supabase JS thật chạy với fake transport để kiểm tra query, không phải phép đo cloud. React cache chỉ có tác dụng trong render request.
-- Đã xác nhận hạ tầng bằng connector: Vercel production `iad1`, Supabase Úc `ap-southeast-2`. Project **VPhim Singapore** đã tạo trong organization đã chọn, region `ap-southeast-1`, `ACTIVE_HEALTHY`; project nguồn và kết nối production không đổi. File env đích riêng chờ server key và quy trình migration; chưa nhận là chuyển hạ tầng xong.
+- Đã xác nhận hạ tầng bằng connector: Vercel production `iad1`, Supabase Úc `ap-southeast-2`. Project **VPhim Singapore** đã tạo trong organization đã chọn, region `ap-southeast-1`, `ACTIVE_HEALTHY`; core/operations migrations đã áp dụng trên project đích trống. Server key đích đã được người dùng điền trong env riêng. Chưa sao chép dữ liệu hoặc thay kết nối production.
+- Người dùng yêu cầu **tạm dừng chuyển dữ liệu, hoàn tất code trước**. Automatic approval review đã từ chối xuất dữ liệu production qua connector do cần sự cho phép rõ ràng cho payload nhạy cảm; không có export thành công, không thử cách vòng qua. Vercel setting PATCH vẫn trả 403 sau khi người dùng xác nhận duyệt quyền team; `vercel.json` đã cấu hình `sin1` cho lần deploy tới, chưa báo region production đã đổi.
 - Xem [bằng chứng và cách đo hiệu năng](performance.md), [migration/cutover/rollback](migrate-singapore.md). Chưa đo authenticated production sau sửa; không hứa mốc RTT cố định.
 - Hallmark: hai lỗi mới ở eyebrow/tracking của trang điều khoản đã bỏ. Các lỗi màu literal của logo/navigation-progress đã có ở baseline do thay đổi branding/loading của người dùng, được giữ nguyên để không thay thiết kế của họ; không báo static scan toàn repo sạch. Render runner chưa chạy.
+- Một lượt review độc lập: không có Critical, hai Important đã sửa bằng regression RED→GREEN: lỗi đọc resume không mount player để tránh ghi đè tập; truy vấn trạng thái gắn current provider ID để không nhầm hai phim chung slug. Không có Minor mới. Không chạy lượt review thứ hai.
+- Các phần reviewer không kết luận: migration/OAuth/Storage/độ trễ authenticated thực tế chưa được chứng minh; điều khoản không phải kiểm định pháp lý/quyền phát hành; giữ màu branding hiện có; timing khôi phục vị trí giây trong player giữ hành vi cũ. Chi phí tương ứng là cần smoke test sau cấu hình, rà soát pháp lý thực tế, static lint còn ba Floor failures cũ và khả năng player vẫn chờ/điều chỉnh vị trí như trước.
 
 ## Đã kiểm tra
 

@@ -11,13 +11,13 @@ Theo lựa chọn đã duyệt của người dùng:
 | Supabase        | `clwgfwegvuaszlzjcftm`, Sydney | `rusuztvsgccxgqicslzp`, Singapore |
 | Organization    | Vang-2812's Org, free          | Cùng organization                 |
 
-Project **VPhim Singapore** đã tạo, `ACTIVE_HEALTHY`, region `ap-southeast-1`, chi phí tạo project được Supabase báo 0 USD/tháng tại thời điểm thực hiện. Chưa thay kết nối production. Project cũ vẫn giữ nguyên; project đích mới chưa chứa dữ liệu ứng dụng.
+Project **VPhim Singapore** đã tạo, `ACTIVE_HEALTHY`, region `ap-southeast-1`, chi phí tạo project được Supabase báo 0 USD/tháng tại thời điểm thực hiện. Core/operations migrations đã áp dụng vào project đích trống, chưa có bản sao dữ liệu Auth/ứng dụng. Chưa thay kết nối production. Project cũ vẫn giữ nguyên. Người dùng đã yêu cầu **tạm dừng chuyển dữ liệu và hoàn tất code trước**; các bước còn lại bên dưới là runbook cho lần tiếp tục.
 
-File `.env.singapore.local` (Git-ignored) chứa URL/publishable key đích, server key để trống chờ bạn điền. `.env.local` vẫn trỏ project cũ. Đừng commit các file env, backup hoặc chuyển secret vào chat.
+File `.env.singapore.local` (Git-ignored) chứa URL/publishable key đích; người dùng đã điền server key. `.env.local` vẫn trỏ project cũ. Đừng commit các file env, backup hoặc chuyển secret vào chat. Thao tác đổi setting Vercel qua connector còn bị 403 dù người dùng đã duyệt quyền team; region `sin1` hiện được chuẩn bị qua cấu hình source, không nhận là deployment đang chạy ở đó.
 
 ## Chuyển dữ liệu có giữ tài khoản
 
-Làm theo [quy trình backup/restore chính thức](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore) với hai project đã nêu. Cần connection string Session pooler/DB password của cả hai project trong môi trường local, Supabase CLI/Docker và psql. Không dùng REST JSON export riêng bảng public để thay backup có Auth.
+Khi tiếp tục, ưu tiên [quy trình backup/restore chính thức](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore) với hai project đã nêu. Cần connection string Session pooler/DB password của cả hai project trong môi trường local, Supabase CLI/Docker và psql. Đích hiện đã có schema rỗng: phải lập kế hoạch đối chiếu/restore phù hợp hoặc dùng đích trống mới, không nhập schema dump trùng một cách mù quáng. Không dùng REST JSON export riêng bảng public để thay backup có Auth. Lần này automatic approval review từ chối export payload Auth/cá nhân qua connector; không có dữ liệu được xuất/chuyển thành công.
 
 Trước khi restore, lưu snapshot mã/cấu hình và backup có thể phục hồi. Dữ liệu Auth cần giữ UUID, mật khẩu đã băm và identities; dữ liệu ứng dụng cần giữ toàn bộ quan hệ profile/access, phim tham chiếu, thư viện, phiên xem, tiến độ và audit. Không tạo lại user qua signup rồi gán lịch sử sang UUID khác. Giữ snapshot riêng tư ngoài Git. Đến lúc cutover cần tạm dừng ghi vào nguồn, lấy bản cuối và đối chiếu trước khi mở ghi ở đích; bản sao thử khi web còn hoạt động chưa phải dữ liệu cutover cuối.
 

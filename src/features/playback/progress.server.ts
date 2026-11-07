@@ -8,6 +8,7 @@ import { errorResult, type Result } from "@/lib/result";
 import type { Page } from "@/features/movies/types";
 import { toMovieRef } from "@/features/library/service.server";
 import type { MovieRef } from "@/features/library/types";
+import { getMovie } from "@/features/movies/client.server";
 export interface ContinueItem {
   movie: MovieRef;
   episodeKey: string;
@@ -93,12 +94,15 @@ export async function getMovieResume(
   try {
     const m = await getOptionalMember();
     if (!m) return { ok: true, data: null };
+    const movie = await getMovie(slug);
+    if (!movie.ok) return movie;
     const c = await createServerSupabase();
     const { data, error } = await c
       .from("watch_resume")
       .select("episode_key,server_key,movie_refs!inner(slug)")
       .eq("user_id", m.userId)
       .eq("movie_refs.slug", slug)
+      .eq("movie_refs.provider_id", movie.data.id)
       .maybeSingle();
     if (error) throw error;
     if (!data) return { ok: true, data: null };

@@ -67,6 +67,25 @@ async function WatchContent({
   let episodeKey = p.episode;
   if (!episodeKey) {
     const resume = await getMovieResume(movie.slug);
+    if (!resume.ok)
+      return (
+        <Feedback
+          title="Chưa khôi phục được tập đang xem"
+          message={resume.message}
+          kind="error"
+        >
+          <RetryLink
+            href={
+              "/xem/" +
+              movie.slug +
+              (p.server ? "?" + new URLSearchParams({ server: p.server }) : "")
+            }
+          />
+          <Link className="button" href={"/phim/" + movie.slug}>
+            Tự chọn tập
+          </Link>
+        </Feedback>
+      );
     if (resume.ok && resume.data) {
       episodeKey = resume.data.episodeKey;
       serverKey = serverKey || resume.data.serverKey;

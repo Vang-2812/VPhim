@@ -23,6 +23,9 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
   unstable_cache: (fn: unknown) => fn,
 }));
+vi.mock("@/features/movies/client.server", () => ({
+  getMovie: async () => ({ ok: true, data: { id: "p-current", slug: "a" } }),
+}));
 import {
   getMovieResume,
   getContinueWatching,
@@ -99,6 +102,35 @@ it("does not query resume for a guest", async () => {
   boundary.member = null;
   expect(await getMovieResume("a")).toEqual({ ok: true, data: null });
   expect(requests).toHaveLength(0);
+});
+it("does not reuse a different provider movie saved under the same slug", async () => {
+  const transport = vi.fn<typeof fetch>().mockImplementation(async (input) => {
+    const url = new URL(String(input));
+    requests.push(url);
+    const hasIdentity =
+      url.searchParams.get("movie_refs.provider_id") === "eq.p-current";
+    const table = url.pathname.split("/").at(-1);
+    const data =
+      table === "playlists"
+        ? []
+        : hasIdentity
+          ? []
+          : table === "watch_resume"
+            ? rows
+            : [{ movie_ref_id: "m-old" }];
+    return new Response(JSON.stringify(data), {
+      headers: { "Content-Type": "application/json" },
+    });
+  });
+  boundary.client = createClient("https://project.supabase.co", "public-test", {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: transport },
+  });
+  expect(await getMovieResume("a")).toEqual({ ok: true, data: null });
+  expect(await getLibraryState("a")).toEqual({
+    ok: true,
+    data: { selected: false, playlists: [] },
+  });
 });
 it("does not turn duplicate slug matches or query errors into a false resume", async () => {
   rows = [rows[0], { ...rows[0], movie_ref_id: "m-b" }];
