@@ -1,0 +1,182 @@
+{
+  "status": true,
+  "msg": "",
+  "movie": {
+    "tmdb": {
+      "id": null,
+      "type": null,
+      "season": null,
+      "vote_average": 0,
+      "vote_count": 0
+    },
+    "imdb": {
+      "id": null,
+      "vote_average": 0,
+      "vote_count": 0
+    },
+    "created": {
+      "time": "2026-10-22T18:36:49Z"
+    },
+    "modified": {
+      "time": "2026-11-07T08:15:54Z"
+    },
+    "_id": "a9990239064bf3e21ea8c090fec6ef79",
+    "name": "Xóm Nhỏ",
+    "slug": "xom-nho",
+    "origin_name": "Hamlet",
+    "alternative_names": [],
+    "content": "<p>\"Xóm nhỏ\" xoay quanh câu chuyện của Trâm - cô gái 19 tuổi mang trong mình sự bồng bột và ngang bướng của tuổi trẻ. Sau cuộc tranh cãi gay gắt với bố, Trâm quyết định rời nhà lên Hà Nội với mong muốn tự lập và chứng minh bản thân. Không chỉ xoay quanh hành trình trưởng thành của những người trẻ, “Xóm nhỏ” còn khắc họa cuộc sống của cộng đồng lao động xa quê với nhiều số phận và hoàn cảnh khác nhau. Đằng sau những lo toan cơm áo, những vất vả thường nhật vẫn là sự sẻ chia, lòng tốt và tình cảm chân thành giữa những con người cùng cảnh ngộ.</p>",
+    "type": "series",
+    "status": "ongoing",
+    "thumb_url": "https://phimimg.com/uploads/movies/20261022/xom-nho-thumb.webp",
+    "poster_url": "https://phimimg.com/uploads/movies/20261022/xom-nho-poster.webp",
+    "is_copyright": false,
+    "sub_docquyen": false,
+    "chieurap": false,
+    "is_published": true,
+    "trailer_url": null,
+    "time": "28 phút/tập",
+    "episode_current": "Tập 12",
+    "episode_total": 35,
+    "quality": "FHD",
+    "lang": "Vietsub",
+    "lang_key": ["vs"],
+    "notify": "",
+    "showtimes": "",
+    "year": 2026,
+    "view": 420,
+    "actor": [
+      "NSƯT Hoàng Hải",
+      "Lê Lưu Ly",
+      "Hà Thành",
+      "Thùy Dương",
+      "Lê Hoàng Long",
+      "Phùng Khánh Linh",
+      "Thanh Tú",
+      "Trần Bích Thủy",
+      "Đình Hưng"
+    ],
+    "director": ["Bùi Quốc Việt"],
+    "category": [
+      {
+        "id": "37a7b38b6184a5ebd3c43015aa20709d",
+        "name": "Chính Kịch",
+        "slug": "chinh-kich"
+      },
+      {
+        "id": "a2492d6cbc4d58f115406ca14e5ec7b6",
+        "name": "Gia Đình",
+        "slug": "gia-dinh"
+      },
+      {
+        "id": "bb2b4b030608ca5984c8dd0770f5b40b",
+        "name": "Tình Cảm",
+        "slug": "tinh-cam"
+      },
+      {
+        "id": "a7b065b92ad356387ef2e075dee66529",
+        "name": "Tâm Lý",
+        "slug": "tam-ly"
+      }
+    ],
+    "country": [
+      {
+        "id": "f6ce1ae8b39af9d38d653b8a0890adb8",
+        "name": "Việt Nam",
+        "slug": "viet-nam"
+      }
+    ]
+  },
+  "episodes": [
+    {
+      "server_name": "Vietsub",
+      "is_ai": false,
+      "server_data": [
+        {
+          "name": "Tập 01",
+          "slug": "tap-01",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 01",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261022/Rqe5nHAL/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261022/Rqe5nHAL/index.m3u8"
+        },
+        {
+          "name": "Tập 02",
+          "slug": "tap-02",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 02",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261023/miLM1FkB/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261023/miLM1FkB/index.m3u8"
+        },
+        {
+          "name": "Tập 03",
+          "slug": "tap-03",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 03",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261023/MAKxch0K/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261023/MAKxch0K/index.m3u8"
+        },
+        {
+          "name": "Tập 04",
+          "slug": "tap-04",
+          "filename": "Xóm nhỏ - Tập 4",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261026/xc2PVFgC/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261026/xc2PVFgC/index.m3u8"
+        },
+        {
+          "name": "Tập 05",
+          "slug": "tap-05",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 05",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261027/TwAorJ9w/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261027/TwAorJ9w/index.m3u8"
+        },
+        {
+          "name": "Tập 06",
+          "slug": "tap-06",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 06",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261028/MBTGqSPO/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261028/MBTGqSPO/index.m3u8"
+        },
+        {
+          "name": "Tập 07",
+          "slug": "tap-07",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 07",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261030/d0zkRcP2/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261030/d0zkRcP2/index.m3u8"
+        },
+        {
+          "name": "Tập 08",
+          "slug": "tap-08",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 08",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261104/aKgLt0BA/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261104/aKgLt0BA/index.m3u8"
+        },
+        {
+          "name": "Tập 09",
+          "slug": "tap-09",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 09",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261104/d7DZACdy/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261104/d7DZACdy/index.m3u8"
+        },
+        {
+          "name": "Tập 10",
+          "slug": "tap-10",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 10",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261105/ojql2tdn/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261105/ojql2tdn/index.m3u8"
+        },
+        {
+          "name": "Tập 11",
+          "slug": "tap-11",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 11",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261106/rTqD828K/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261106/rTqD828K/index.m3u8"
+        },
+        {
+          "name": "Tập 12",
+          "slug": "tap-12",
+          "filename": "Xóm Nhỏ - Hamlet - 2026 - 1080p - Vietsub - Tập 12",
+          "link_embed": "https://player.phimapi.com/player/?url=https://a.kvp726.com/20261107/Xy68AXzx/index.m3u8",
+          "link_m3u8": "https://a.kvp726.com/20261107/Xy68AXzx/index.m3u8"
+        }
+      ]
+    }
+  ]
+}

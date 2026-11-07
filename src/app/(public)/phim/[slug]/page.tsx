@@ -1,0 +1,121 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Play, ChevronRight } from "lucide-react";
+import { getMovie } from "@/features/movies/client.server";
+import { Feedback, RetryLink } from "@/components/ui/feedback";
+import { LibraryControls } from "@/features/library/library-controls";
+export const dynamic = "force-dynamic";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const r = await getMovie((await params).slug);
+  return { title: r.ok ? r.data.title : "Thông tin phim" };
+}
+export default async function Detail({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const r = await getMovie((await params).slug);
+  if (!r.ok) {
+    if (r.code === "NOT_FOUND") notFound();
+    return (
+      <div className="container">
+        <Feedback
+          title="Chưa tải được thông tin phim"
+          message={r.message}
+          kind="error"
+        >
+          <RetryLink />
+        </Feedback>
+      </div>
+    );
+  }
+  const m = r.data;
+  return (
+    <div className="container page-space">
+      <Link href="/kham-pha" className="breadcrumb">
+        Khám phá
+        <ChevronRight size={14} />
+        Thông tin phim
+      </Link>
+      <section className="detail-layout">
+        <div className="detail-poster">
+          {m.posterUrl && <img src={m.posterUrl} alt={m.title} />}
+        </div>
+        <div>
+          <h1 className="detail-title">{m.title}</h1>
+          <p className="original-title">{m.originalTitle}</p>
+          <div className="metadata-row">
+            {[m.year, m.quality, m.duration, m.language, m.status]
+              .filter(Boolean)
+              .map((v, i) => (
+                <span key={i}>{v}</span>
+              ))}
+          </div>
+          <div className="detail-actions">
+            <Link className="button" href={"/xem/" + m.slug}>
+              <Play size={18} fill="currentColor" />
+              Xem phim
+            </Link>
+            <LibraryControls slug={m.slug} />
+          </div>
+          <h2 className="small-heading">Câu chuyện</h2>
+          <p className="synopsis">
+            {m.description || "Nguồn phim chưa cung cấp phần giới thiệu."}
+          </p>
+          <dl className="movie-facts">
+            {[
+              ["Thể loại", m.genres.join(", ")],
+              ["Quốc gia", m.countries.join(", ")],
+              ["Đạo diễn", m.director.join(", ")],
+              ["Diễn viên", m.actors.join(", ")],
+            ]
+              .filter(([, v]) => v)
+              .map(([k, v]) => (
+                <div key={k}>
+                  <dt>{k}</dt>
+                  <dd>{v}</dd>
+                </div>
+              ))}
+          </dl>
+        </div>
+      </section>
+      <section className="movie-section">
+        <div className="section-heading">
+          <h2>Chọn tập để bắt đầu</h2>
+        </div>
+        {m.servers.length ? (
+          m.servers.map((s) => (
+            <div className="episode-section" key={s.key}>
+              <h3>{s.label}</h3>
+              <div className="episode-grid">
+                {s.episodes.map((e) => (
+                  <Link
+                    className="episode"
+                    key={e.key}
+                    href={
+                      "/xem/" +
+                      m.slug +
+                      "?" +
+                      new URLSearchParams({ server: s.key, episode: e.key })
+                    }
+                  >
+                    {e.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))
+        ) : (
+          <Feedback
+            title="Chưa có tập phim"
+            message="Nguồn phim chưa cập nhật tập hoặc đang phát hành trailer."
+          />
+        )}
+      </section>
+    </div>
+  );
+}
