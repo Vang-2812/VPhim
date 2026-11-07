@@ -519,17 +519,11 @@ legend {
   padding: var(--space-xl) 0;
   max-width: 800px;
 }
-.legal-kicker {
-  color: var(--color-accent);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  margin-bottom: var(--space-md);
-}
 .legal-heading h1 {
   font-size: clamp(32px, 5vw, 56px);
   margin-bottom: var(--space-lg);
 }
-.legal-heading > p:not(.legal-kicker) {
+.legal-heading > p {
   margin-top: var(--space-md);
   color: var(--color-ink-2);
   max-width: 65ch;

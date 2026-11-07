@@ -1,6 +1,15 @@
 # Kiểm chứng VPhim
 
-Ngày 2026-11-07. Code và hướng dẫn cấu hình là phạm vi bàn giao hiện tại; người dùng xác nhận chưa có project Supabase.
+Ngày 2026-11-07. Các mục của lần bàn giao đầu bên dưới là lịch sử. Người dùng sau đó đã deploy website, cấu hình Supabase Úc và bổ sung auto-resume/cache/loading/logo/fallback nhúng.
+
+## Cập nhật: điều khoản và hiệu năng
+
+- Baseline đọc lại: `6b739d1`, 42 tests qua trước thay đổi. Hiện **58/58 tests trong 22 files** và **5/5 SQL/RLS suites** qua; TypeScript qua. Build production đã exit 0; kết quả cuối sau review cần dựa trên lần build mới nhất.
+- Trang `/dieu-khoan` có nội dung VPhim riêng, contact đã xác nhận, liên kết footer/Auth và mục lục. Browser đã kiểm tra desktop và mobile 390px: không tràn ngang, anchor bản quyền và mailto đúng. Không coi nội dung điều khoản là bảo đảm miễn trách nhiệm hay đã có quyền khai thác phim.
+- Claims + DB access guard, cookie refresh, diagnostic redaction, request budgets, duplicate slug và batch progress có tests. Supabase JS thật chạy với fake transport để kiểm tra query, không phải phép đo cloud. React cache chỉ có tác dụng trong render request.
+- Đã xác nhận hạ tầng bằng connector: Vercel production `iad1`, Supabase Úc `ap-southeast-2`. Project **VPhim Singapore** đã tạo trong organization đã chọn, region `ap-southeast-1`, `ACTIVE_HEALTHY`; project nguồn và kết nối production không đổi. File env đích riêng chờ server key và quy trình migration; chưa nhận là chuyển hạ tầng xong.
+- Xem [bằng chứng và cách đo hiệu năng](performance.md), [migration/cutover/rollback](migrate-singapore.md). Chưa đo authenticated production sau sửa; không hứa mốc RTT cố định.
+- Hallmark: hai lỗi mới ở eyebrow/tracking của trang điều khoản đã bỏ. Các lỗi màu literal của logo/navigation-progress đã có ở baseline do thay đổi branding/loading của người dùng, được giữ nguyên để không thay thiết kế của họ; không báo static scan toàn repo sạch. Render runner chưa chạy.
 
 ## Đã kiểm tra
 

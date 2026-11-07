@@ -6,7 +6,7 @@ VPhim là ứng dụng Next.js có SSR, Server Actions, Proxy và Supabase; **kh
 
 Chọn dịch vụ chạy Next.js Node runtime, ví dụ Vercel, hoặc máy chủ Node 24+ (đã kiểm tra với Node 24 LTS). Worker Auth chạy TypeScript trực tiếp bằng Node; phiên bản tối thiểu của dự án là 24, cao hơn minimum của Next.js và Supabase SDK. Cài bằng `npm ci`, build `npm run build`, chạy `npm start` (mặc định loopback 127.0.0.1:3000; reverse proxy của máy chủ chuyển tiếp vào port này).
 
-Chưa tạo deployment, tài khoản cloud hay tên miền vì người dùng hiện yêu cầu chuẩn bị code và hướng dẫn, chưa có Supabase. Không tự chuyển framework sang Vinext hoặc SPA để khớp một hosting khác.
+Website hiện đã được người dùng deploy tại `https://vphim-one.vercel.app`. Thay đổi lần này cấu hình `vercel.json` về `sin1` theo lựa chọn Singapore; không tự thay framework. Project Supabase Singapore đã tạo, nhưng kết nối production chưa đổi. Xem [quy trình chuyển và rollback](migrate-singapore.md) trước khi cập nhật env.
 
 ## Checklist cấu hình trước khi đưa lên mạng
 
@@ -17,6 +17,8 @@ Chưa tạo deployment, tài khoản cloud hay tên miền vì người dùng hi
 - Cập nhật Supabase Site URL/redirect allowlist và Google callback cho staging/production. Không dùng wildcard rộng cho domain lạ.
 - Database production không dùng biến `VPHIM_TEST_*` hoặc `TEST_DATABASE_URL` trong tác vụ test.
 - Dùng HTTPS, cùng origin nhất quán. Test signup/confirm/Google/reset, ownership A/B, khóa user token cũ, avatar và phát HLS thực.
+- Footer và form Auth liên kết `/dieu-khoan`; email liên hệ là `contact.vphim@gmail.com`. Nội dung điều khoản không thay cho việc có quyền phát hành và thực hiện các nghĩa vụ pháp lý áp dụng.
+- Đo số request và region theo [performance](performance.md). `SUPABASE_TIMING=1` bật log timing đã loại dữ liệu nhạy cảm; mặc định tắt.
 
 ## Nguồn phim
 

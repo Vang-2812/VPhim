@@ -1,6 +1,6 @@
 # Kết nối Supabase và Google cho VPhim
 
-Hiện dự án chưa có tài khoản cloud. Phần duyệt và phát phim dùng API KKPhim thật; tài khoản chỉ bật khi hoàn thành các bước dưới đây.
+Người dùng đã cấu hình project Supabase Úc và deploy website. Hướng dẫn này vẫn dùng cho project mới; project Singapore đã được tạo theo yêu cầu. Nếu giữ dữ liệu hiện có, làm theo [quy trình migration](migrate-singapore.md), không tạo schema trùng bằng cách chạy lại hướng dẫn từ đầu trên bản restore.
 
 ## 1. Tạo project và cấu hình cục bộ
 

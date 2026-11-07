@@ -24,7 +24,6 @@ export default function TermsPage() {
         Về trang chủ
       </Link>
       <header className="legal-heading">
-        <p className="legal-kicker">THÔNG TIN & QUY ĐỊNH</p>
         <h1>
           Điều khoản sử dụng
           <br />& Bản quyền
