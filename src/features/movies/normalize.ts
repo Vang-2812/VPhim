@@ -121,13 +121,24 @@ function normalizeEpisodes(input: unknown): Episode[] {
           ? slug
           : null;
     if (!key || key.length > 300) return [];
+    const rawEmbed = text(row.link_embed);
+    let hlsUrl = safeMediaUrl(row.link_m3u8, "hls");
+    if (!hlsUrl && rawEmbed) {
+      try {
+        const u = new URL(rawEmbed);
+        const urlParam = u.searchParams.get("url");
+        if (urlParam) {
+          hlsUrl = safeMediaUrl(urlParam, "hls");
+        }
+      } catch {}
+    }
     return [
       {
         key,
         slug: slug || key,
         label: text(row.name) || slug || filename,
-        hlsUrl: safeMediaUrl(row.link_m3u8, "hls"),
-        embedUrl: safeMediaUrl(row.link_embed, "embed"),
+        hlsUrl,
+        embedUrl: safeMediaUrl(rawEmbed, "embed"),
       },
     ];
   });

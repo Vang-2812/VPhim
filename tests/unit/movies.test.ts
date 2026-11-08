@@ -126,4 +126,39 @@ describe("KKPhim data boundary", () => {
         },
       }).description,
     ).toBe("Nội dung"));
+
+  it("permits dynamic provider CDN domains for HLS streams", () => {
+    const validHlsUrls = [
+      "https://v7.kkphimplayer7.com/20260622/trJXGtSz/index.m3u8",
+      "https://s3.phim1280.tv/20240618/ZBCTUJoB/index.m3u8",
+      "https://a.kvp726.com/20261022/Rqe5nHAL/index.m3u8",
+      "https://vip.opstream1.org/20241010/film/index.m3u8",
+    ];
+    for (const url of validHlsUrls) {
+      expect(safeMediaUrl(url, "hls")).toBe(url);
+    }
+  });
+
+  it("extracts direct HLS stream from embedUrl if link_m3u8 is missing", () => {
+    const detail = normalizeDetail({
+      movie: { slug: "gia-toc-rong", name: "Gia Tộc Rồng" },
+      episodes: [
+        {
+          server_name: "Vietsub",
+          server_data: [
+            {
+              slug: "tap-08",
+              name: "Tập 08",
+              link_embed:
+                "https://player.phimapi.com/player/?url=https://v7.kkphimplayer7.com/20260622/trJXGtSz/index.m3u8",
+            },
+          ],
+        },
+      ],
+    });
+    const ep = detail.servers[0].episodes[0];
+    expect(ep.hlsUrl).toBe(
+      "https://v7.kkphimplayer7.com/20260622/trJXGtSz/index.m3u8",
+    );
+  });
 });
