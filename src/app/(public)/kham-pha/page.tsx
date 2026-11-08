@@ -1,10 +1,26 @@
+import type { Metadata } from "next";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { listMovies, getCatalogs } from "@/features/movies/client.server";
 import { parseBrowseQuery, movieTypes } from "@/features/movies/query";
 import { MovieGrid } from "@/features/movies/movie-grid";
 import { Feedback, RetryLink } from "@/components/ui/feedback";
 import { Pagination } from "@/components/ui/pagination";
-export const metadata = { title: "Khám phá phim" };
+
+export const metadata: Metadata = {
+  title: "Khám phá phim — Danh sách phim mới, phim bộ, phim lẻ hay nhất | VPhim",
+  description:
+    "Tìm kiếm và lọc phim trực tuyến theo thể loại, quốc gia, năm phát hành, định dạng Vietsub và Thuyết minh chất lượng cao trên VPhim.",
+  alternates: {
+    canonical: "/kham-pha",
+  },
+  openGraph: {
+    type: "website",
+    title: "Khám phá phim — Danh sách phim mới, phim bộ, phim lẻ hay nhất | VPhim",
+    description:
+      "Tìm kiếm và lọc phim trực tuyến theo thể loại, quốc gia, năm phát hành trên VPhim.",
+    url: "/kham-pha",
+  },
+};
 export const dynamic = "force-dynamic";
 export default async function Browse({
   searchParams,

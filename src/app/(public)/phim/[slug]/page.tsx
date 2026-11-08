@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Play, ChevronRight } from "lucide-react";
+import { Play, ChevronRight, HelpCircle } from "lucide-react";
 import { getMovie } from "@/features/movies/client.server";
 import { Feedback, RetryLink } from "@/components/ui/feedback";
 import { LibraryControls } from "@/features/library/library-controls";
@@ -9,15 +10,70 @@ import { getOptionalMember } from "@/features/auth/context.server";
 import { getLibraryState } from "@/features/library/actions";
 import { getMovieResume } from "@/features/playback/progress.server";
 import type { MovieDetail } from "@/features/movies/types";
+import { getSiteOrigin, cleanDescription, buildMovieTitle } from "@/lib/seo/config";
+import {
+  MovieJsonLd,
+  BreadcrumbJsonLd,
+  FaqJsonLd,
+} from "@/lib/seo/schema-org";
+
 export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}): Promise<Metadata> {
   const r = await getMovie((await params).slug);
-  return { title: r.ok ? r.data.title : "Thông tin phim" };
+  if (!r.ok) {
+    return { title: "Thông tin phim | VPhim" };
+  }
+  const m = r.data;
+  const siteOrigin = getSiteOrigin();
+  const title = buildMovieTitle(m);
+  const description = cleanDescription(m.description, 160);
+  const imageUrl = m.posterUrl || m.thumbUrl || `${siteOrigin}/icon.svg`;
+
+  return {
+    title,
+    description,
+    keywords: [
+      m.title,
+      m.originalTitle || "",
+      `phim ${m.title}`,
+      `xem phim ${m.title}`,
+      ...m.genres,
+      ...m.countries,
+      "vietsub",
+      "thuyết minh",
+      "full hd",
+    ].filter(Boolean),
+    alternates: {
+      canonical: `/phim/${m.slug}`,
+    },
+    openGraph: {
+      type: "video.movie",
+      title,
+      description,
+      url: `/phim/${m.slug}`,
+      siteName: "VPhim",
+      locale: "vi_VN",
+      images: [
+        {
+          url: imageUrl,
+          alt: m.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
 }
+
 export default async function Detail({
   params,
 }: {
@@ -39,8 +95,45 @@ export default async function Detail({
     );
   }
   const m = r.data;
+  const siteOrigin = getSiteOrigin();
+
+  const totalEpisodes = m.servers[0]?.episodes.length || 0;
+  const faqs = [
+    {
+      question: `Phim ${m.title} có phụ đề Vietsub và Thuyết minh không?`,
+      answer: `Phim ${m.title} trên VPhim có đầy đủ phụ đề Vietsub và Thuyết minh với chất lượng Full HD, âm thanh rõ ràng và cập nhật liên tục.`,
+    },
+    {
+      question: `Xem phim ${m.title} ở đâu nhanh và không giật lag?`,
+      answer: `Bạn có thể xem phim ${m.title} trực tiếp trên VPhim qua luồng phát HLS tốc độ cao, hỗ trợ chuyển tập tự động và bộ lọc hình ảnh chuyên sâu.`,
+    },
+    ...(totalEpisodes > 1
+      ? [
+          {
+            question: `Phim ${m.title} có bao nhiêu tập?`,
+            answer: `Hiện tại phim ${m.title} có ${totalEpisodes} tập được phát hành trên hệ thống VPhim.`,
+          },
+        ]
+      : []),
+    {
+      question: `VPhim có lưu lại thời gian đang xem dở phim ${m.title} không?`,
+      answer: `Có, hệ thống tự động ghi nhớ chính xác giây phút bạn đang xem dở trên phim ${m.title} để bạn có thể tiếp tục xem lại bất kỳ lúc nào.`,
+    },
+  ];
+
   return (
     <>
+      <MovieJsonLd key="ld-movie" movie={m} origin={siteOrigin} />
+      <BreadcrumbJsonLd
+        key="ld-bc"
+        items={[
+          { name: "Trang chủ", url: siteOrigin },
+          { name: "Khám phá", url: `${siteOrigin}/kham-pha` },
+          { name: m.title, url: `${siteOrigin}/phim/${m.slug}` },
+        ]}
+      />
+      <FaqJsonLd key="ld-faq" faqs={faqs} />
+
       <section className="detail-hero">
         <div className="detail-backdrop" aria-hidden="true">
           {(m.thumbUrl || m.posterUrl) && (
@@ -141,10 +234,29 @@ export default async function Detail({
             />
           )}
         </section>
+
+        {/* Visible FAQ Section for GEO and Users */}
+        <section className="movie-section movie-faq-section">
+          <div className="section-heading">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <HelpCircle size={20} className="text-amber" />
+              <h2>Câu hỏi thường gặp về {m.title}</h2>
+            </div>
+          </div>
+          <div className="faq-list">
+            {faqs.map((faq, index) => (
+              <div key={index} className="faq-item">
+                <h3 className="faq-question">{faq.question}</h3>
+                <p className="faq-answer">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </>
   );
 }
+
 async function DetailActions({ movie: m }: { movie: MovieDetail }) {
   const member = await getOptionalMember();
   let initialSelected = false;

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import type { MovieDetail } from "@/features/movies/types";
 import { notFound } from "next/navigation";
 import { getMovie } from "@/features/movies/client.server";
@@ -8,15 +9,58 @@ import { WatchScreen } from "@/features/playback/watch-screen";
 import { getMovieResume } from "@/features/playback/progress.server";
 import { getOptionalMember } from "@/features/auth/context.server";
 import { Feedback, RetryLink } from "@/components/ui/feedback";
+import { getSiteOrigin, cleanDescription } from "@/lib/seo/config";
+import { VideoObjectJsonLd, BreadcrumbJsonLd } from "@/lib/seo/schema-org";
+
 export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}): Promise<Metadata> {
   const r = await getMovie((await params).slug);
-  return { title: r.ok ? "Xem " + r.data.title : "Xem phim" };
+  if (!r.ok) {
+    return { title: "Xem phim | VPhim" };
+  }
+  const m = r.data;
+  const siteOrigin = getSiteOrigin();
+  const title = `Xem Phim ${m.title} ${m.year ? `(${m.year})` : ""} - Full HD Vietsub | VPhim`;
+  const description = cleanDescription(
+    `Xem phim ${m.title} trực tuyến chất lượng cao Full HD Vietsub và Thuyết minh. ${m.description}`,
+    160,
+  );
+  const imageUrl = m.thumbUrl || m.posterUrl || `${siteOrigin}/icon.svg`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/xem/${m.slug}`,
+    },
+    openGraph: {
+      type: "video.episode",
+      title,
+      description,
+      url: `/xem/${m.slug}`,
+      siteName: "VPhim",
+      locale: "vi_VN",
+      images: [
+        {
+          url: imageUrl,
+          alt: m.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
 }
+
 export default async function Watch({
   params,
   searchParams,
@@ -37,12 +81,26 @@ export default async function Watch({
     );
   }
   const p = await searchParams;
+  const m = r.data;
+  const siteOrigin = getSiteOrigin();
+
   return (
     <div className="container page-space">
+      <VideoObjectJsonLd key="ld-video" movie={m} origin={siteOrigin} />
+      <BreadcrumbJsonLd
+        key="ld-bc"
+        items={[
+          { name: "Trang chủ", url: siteOrigin },
+          { name: "Khám phá", url: `${siteOrigin}/kham-pha` },
+          { name: m.title, url: `${siteOrigin}/phim/${m.slug}` },
+          { name: "Xem phim", url: `${siteOrigin}/xem/${m.slug}` },
+        ]}
+      />
+
       <Suspense
         fallback={
           <div role="status">
-            <h1>{r.data.title}</h1>
+            <h1>{m.title}</h1>
             <p className="muted">Đang chọn tập và khôi phục vị trí xem…</p>
             <div
               className="skeleton"
@@ -51,11 +109,12 @@ export default async function Watch({
           </div>
         }
       >
-        <WatchContent movie={r.data} requested={p} />
+        <WatchContent movie={m} requested={p} />
       </Suspense>
     </div>
   );
 }
+
 async function WatchContent({
   movie,
   requested: p,
