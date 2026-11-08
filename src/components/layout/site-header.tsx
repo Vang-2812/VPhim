@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Search, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { getOptionalMember } from "@/features/auth/context.server";
 import { VPhimLogo } from "@/components/ui/logo";
+import { HeaderSearch } from "./header-search";
 import { Suspense } from "react";
 async function HeaderAccount() {
   const member = await getOptionalMember();
@@ -29,13 +30,7 @@ export function SiteHeader() {
           <Link href="/kham-pha?type=hoat-hinh">Hoạt hình</Link>
         </nav>
         <div className="header-actions">
-          <Link
-            href="/kham-pha"
-            className="icon-button"
-            aria-label="Tìm kiếm phim"
-          >
-            <Search size={20} />
-          </Link>
+          <HeaderSearch />
           <Suspense
             fallback={
               <span className="header-account" aria-busy="true">
