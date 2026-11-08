@@ -40,90 +40,109 @@ export default async function Detail({
   }
   const m = r.data;
   return (
-    <div className="container page-space">
-      <Link href="/kham-pha" className="breadcrumb">
-        Khám phá
-        <ChevronRight size={14} />
-        Thông tin phim
-      </Link>
-      <section className="detail-layout">
-        <div className="detail-poster">
-          {m.posterUrl && <img src={m.posterUrl} alt={m.title} />}
+    <>
+      <section className="detail-hero">
+        <div className="detail-backdrop" aria-hidden="true">
+          {(m.thumbUrl || m.posterUrl) && (
+            <img src={(m.thumbUrl || m.posterUrl)!} alt="" fetchPriority="high" />
+          )}
         </div>
-        <div>
-          <h1 className="detail-title">{m.title}</h1>
-          <p className="original-title">{m.originalTitle}</p>
-          <div className="metadata-row">
-            {[m.year, m.quality, m.duration, m.language, m.status]
-              .filter(Boolean)
-              .map((v, i) => (
-                <span key={i}>{v}</span>
-              ))}
-          </div>
-          <Suspense
-            fallback={
-              <div className="detail-actions" role="status">
-                Đang tải tùy chọn xem…
-              </div>
-            }
-          >
-            <DetailActions movie={m} />
-          </Suspense>
-          <h2 className="small-heading">Câu chuyện</h2>
-          <p className="synopsis">
-            {m.description || "Nguồn phim chưa cung cấp phần giới thiệu."}
-          </p>
-          <dl className="movie-facts">
-            {[
-              ["Thể loại", m.genres.join(", ")],
-              ["Quốc gia", m.countries.join(", ")],
-              ["Đạo diễn", m.director.join(", ")],
-              ["Diễn viên", m.actors.join(", ")],
-            ]
-              .filter(([, v]) => v)
-              .map(([k, v]) => (
-                <div key={k}>
-                  <dt>{k}</dt>
-                  <dd>{v}</dd>
-                </div>
-              ))}
-          </dl>
-        </div>
-      </section>
-      <section className="movie-section">
-        <div className="section-heading">
-          <h2>Chọn tập để bắt đầu</h2>
-        </div>
-        {m.servers.length ? (
-          m.servers.map((s) => (
-            <div className="episode-section" key={s.key}>
-              <h3>{s.label}</h3>
-              <div className="episode-grid">
-                {s.episodes.map((e) => (
-                  <Link
-                    className="episode"
-                    key={e.key}
-                    href={
-                      "/xem/" +
-                      m.slug +
-                      "?" +
-                      new URLSearchParams({ server: s.key, episode: e.key })
-                    }
-                  >
-                    {e.label}
-                  </Link>
+        <div className="container detail-hero-inner">
+          <Link href="/kham-pha" className="breadcrumb">
+            Khám phá
+            <ChevronRight size={14} />
+            Thông tin phim
+          </Link>
+          <div className="detail-hero-copy">
+            <p className="hero-eyebrow">Thông tin phim</p>
+            <h1 className="detail-title">{m.title}</h1>
+            {m.originalTitle && <p className="original-title">{m.originalTitle}</p>}
+            <div className="metadata-row">
+              {[m.year, m.quality, m.duration, m.language, m.status]
+                .filter(Boolean)
+                .map((v, i) => (
+                  <span key={i}>{v}</span>
                 ))}
-              </div>
             </div>
-          ))
-        ) : (
-          <Feedback
-            title="Chưa có tập phim"
-            message="Nguồn phim chưa cập nhật tập hoặc đang phát hành trailer."
-          />
-        )}
+            <p className="detail-teaser">
+              {m.description || "Nguồn phim chưa cung cấp phần giới thiệu."}
+            </p>
+            <Suspense
+              fallback={
+                <div className="detail-actions" role="status">
+                  Đang tải tùy chọn xem…
+                </div>
+              }
+            >
+              <DetailActions movie={m} />
+            </Suspense>
+          </div>
+        </div>
       </section>
-    </div>
+      <div className="container detail-page-body">
+        <section className={m.posterUrl ? "detail-overview" : "detail-overview no-poster"}>
+          {m.posterUrl && (
+            <div className="detail-poster">
+              <img src={m.posterUrl} alt={m.title} loading="lazy" />
+            </div>
+          )}
+          <div>
+            <h2 className="small-heading">Câu chuyện</h2>
+            <p className="synopsis">
+              {m.description || "Nguồn phim chưa cung cấp phần giới thiệu."}
+            </p>
+            <dl className="movie-facts">
+              {[
+                ["Thể loại", m.genres.join(", ")],
+                ["Quốc gia", m.countries.join(", ")],
+                ["Đạo diễn", m.director.join(", ")],
+                ["Diễn viên", m.actors.join(", ")],
+              ]
+                .filter(([, v]) => v)
+                .map(([k, v]) => (
+                  <div key={k}>
+                    <dt>{k}</dt>
+                    <dd>{v}</dd>
+                  </div>
+                ))}
+            </dl>
+          </div>
+        </section>
+        <section className="movie-section">
+          <div className="section-heading">
+            <h2>Chọn tập để bắt đầu</h2>
+          </div>
+          {m.servers.length ? (
+            m.servers.map((s) => (
+              <div className="episode-section" key={s.key}>
+                <h3>{s.label}</h3>
+                <div className="episode-grid">
+                  {s.episodes.map((e) => (
+                    <Link
+                      className="episode"
+                      key={e.key}
+                      href={
+                        "/xem/" +
+                        m.slug +
+                        "?" +
+                        new URLSearchParams({ server: s.key, episode: e.key })
+                      }
+                    >
+                      {e.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <Feedback
+              title="Chưa có tập phim"
+              message="Nguồn phim chưa cập nhật tập hoặc đang phát hành trailer."
+            />
+          )}
+        </section>
+      </div>
+    </>
   );
 }
 async function DetailActions({ movie: m }: { movie: MovieDetail }) {

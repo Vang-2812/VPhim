@@ -32,7 +32,17 @@ export default async function Home() {
       <div className="container">
         {featured && (
           <section className="hero">
+            <div className="hero-backdrop" aria-hidden="true">
+              {(featured.thumbUrl || featured.posterUrl) && (
+                <img
+                  src={(featured.thumbUrl || featured.posterUrl)!}
+                  alt=""
+                  fetchPriority="high"
+                />
+              )}
+            </div>
             <div className="hero-copy">
+              <p className="hero-eyebrow">Phim mới cập nhật</p>
               <h1>{featured.title}</h1>
               <div className="hero-meta">
                 {featured.year && <span>{featured.year}</span>}
@@ -51,28 +61,12 @@ export default async function Home() {
                   <Play size={17} fill="currentColor" />
                   Xem ngay
                 </Link>
-                <Link className="text-link" href={"/phim/" + featured.slug}>
+                <Link className="button secondary" href={"/phim/" + featured.slug}>
                   Thông tin phim
                   <ArrowUpRight size={17} />
                 </Link>
               </div>
-              <div className="hero-caption">
-                Chọn một bộ phim. Dành thời gian cho câu chuyện.
-              </div>
             </div>
-            <Link
-              className="hero-image"
-              href={"/phim/" + featured.slug}
-              aria-label={"Khám phá " + featured.title}
-            >
-              {(featured.thumbUrl || featured.posterUrl) && (
-                <img
-                  src={(featured.thumbUrl || featured.posterUrl)!}
-                  alt={featured.title}
-                  fetchPriority="high"
-                />
-              )}
-            </Link>
           </section>
         )}
         <div className="genre-links">
@@ -104,7 +98,7 @@ export default async function Home() {
             </Link>
           </div>
           {movies.length ? (
-            <MovieGrid items={movies.slice(0, 18)} />
+            <MovieGrid items={movies.slice(0, 18)} variant="rail" />
           ) : (
             <Feedback
               title="Chưa có phim mới"
