@@ -400,7 +400,12 @@ legend {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, var(--color-paper) 0%, oklch(12.5% 0.008 55 / 0.92) 25%, transparent 76%),
+    linear-gradient(
+      90deg,
+      var(--color-paper) 0%,
+      oklch(12.5% 0.008 55 / 0.92) 25%,
+      transparent 76%
+    ),
     linear-gradient(0deg, var(--color-paper) 0%, transparent 64%);
 }
 .hero-backdrop {
@@ -671,6 +676,7 @@ legend {
 .legal-heading {
   padding: var(--space-xl) 0;
   max-width: 800px;
+  border-bottom: 2px solid var(--color-accent-deep);
 }
 .legal-heading h1 {
   font-size: clamp(32px, 5vw, 56px);
@@ -685,13 +691,18 @@ legend {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
   gap: var(--space-2xl);
-  border-top: 1px solid var(--color-rule);
   padding-top: var(--space-xl);
 }
 .legal-nav {
   align-self: start;
   display: grid;
   gap: var(--space-sm);
+  position: sticky;
+  top: 96px;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-rule);
+  border-radius: 9px;
+  background: var(--color-paper-2);
 }
 .legal-nav > p {
   font-size: 12px;
@@ -704,6 +715,9 @@ legend {
   font-size: 14px;
   padding: var(--space-xs) 0;
 }
+.legal-nav a:hover {
+  color: var(--color-accent);
+}
 .legal-nav a span {
   color: var(--color-accent);
 }
@@ -712,7 +726,7 @@ legend {
   min-width: 0;
 }
 .legal-content section {
-  scroll-margin-top: var(--space-xl);
+  scroll-margin-top: 100px;
   margin-bottom: var(--space-2xl);
 }
 .legal-content h2 {
@@ -748,8 +762,20 @@ legend {
     gap: var(--space-xl);
   }
   .legal-nav {
-    border-bottom: 1px solid var(--color-rule);
-    padding-bottom: var(--space-lg);
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+  }
+  .legal-nav > p {
+    flex-basis: 100%;
+    margin-bottom: 0;
+  }
+  .legal-nav a {
+    padding: var(--space-xs);
+    border-radius: 4px;
+    background: var(--color-paper-3);
   }
 }
 .page-heading {
@@ -872,7 +898,12 @@ legend {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, var(--color-paper) 0%, oklch(12.5% 0.008 55 / 0.94) 27%, transparent 79%),
+    linear-gradient(
+      90deg,
+      var(--color-paper) 0%,
+      oklch(12.5% 0.008 55 / 0.94) 27%,
+      transparent 79%
+    ),
     linear-gradient(0deg, var(--color-paper) 0%, transparent 60%);
 }
 .detail-backdrop {
@@ -1020,13 +1051,39 @@ legend {
   border-color: var(--color-accent);
 }
 .auth-layout {
-  max-width: 980px;
-  margin: var(--space-60) auto var(--space-84);
+  max-width: 1120px;
+  margin: var(--space-44) auto var(--space-84);
   padding: 0 var(--space-32);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--space-84);
-  align-items: center;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: var(--space-lg);
+  align-items: stretch;
+}
+.auth-aside {
+  min-height: 530px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-48);
+  border: 1px solid var(--color-rule);
+  border-radius: 9px;
+  background:
+    radial-gradient(
+      circle at 82% 20%,
+      oklch(73% 0.15 58 / 0.15),
+      transparent 42%
+    ),
+    linear-gradient(135deg, var(--color-paper-2), var(--color-paper));
+}
+.auth-layout > .form-stack {
+  justify-content: center;
+  padding: var(--space-44);
+  border: 1px solid var(--color-rule);
+  border-radius: 9px;
+  background: var(--color-paper-2);
+}
+.auth-layout > .form-stack input {
+  background: var(--color-paper);
 }
 .auth-aside h1 {
   font-size: 48px;
@@ -1110,14 +1167,19 @@ legend {
 .account-shell {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
-  gap: var(--space-52);
+  gap: var(--space-lg);
   padding-top: var(--space-44);
   padding-bottom: var(--space-80);
   min-height: 650px;
+  align-items: start;
 }
 .account-nav {
-  border-right: 1px solid var(--color-rule);
-  padding-right: var(--space-28);
+  position: sticky;
+  top: 96px;
+  border: 1px solid var(--color-rule);
+  border-radius: 9px;
+  background: var(--color-paper-2);
+  padding: var(--space-lg);
 }
 .account-nav h2 {
   font-size: 18px;
@@ -1140,7 +1202,8 @@ legend {
 }
 .account-nav a.active {
   color: var(--color-accent);
-  background: var(--color-paper-2);
+  background: var(--color-paper-3);
+  box-shadow: inset 2px 0 var(--color-accent);
 }
 .account-nav a:hover,
 .account-nav button:hover {
@@ -1153,6 +1216,11 @@ legend {
 }
 .account-content {
   min-width: 0;
+  min-height: 530px;
+  padding: var(--space-32);
+  border: 1px solid var(--color-rule);
+  border-radius: 9px;
+  background: var(--color-paper-2);
 }
 .account-content h1 {
   font-size: 30px;
@@ -1261,8 +1329,17 @@ legend {
   gap: var(--space-20);
   margin-bottom: var(--space-lg);
 }
+.watch-eyebrow {
+  display: block;
+  margin-bottom: var(--space-xs);
+  color: var(--color-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
 .watch-title h1 {
-  font-size: 27px;
+  font-size: clamp(27px, 3vw, 36px);
 }
 .watch-title p {
   color: var(--color-muted);
@@ -1273,6 +1350,7 @@ legend {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(220px, 1fr);
   gap: var(--space-lg);
+  align-items: start;
 }
 .video-stage {
   aspect-ratio: 16/9;
@@ -1281,6 +1359,8 @@ legend {
   align-items: center;
   justify-content: center;
   overflow: clip;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
 }
 .video-stage video,
 .video-stage iframe {
@@ -1302,6 +1382,7 @@ legend {
 .watch-episodes {
   background: var(--color-paper-2);
   border-radius: var(--radius-card);
+  border: 1px solid var(--color-rule);
   padding: var(--space-lg);
   max-height: 550px;
   overflow: auto;
@@ -1381,6 +1462,9 @@ legend {
 }
 .admin-table-wrap {
   overflow: auto;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: var(--color-paper);
 }
 .admin-table {
   width: 100%;
@@ -1388,10 +1472,11 @@ legend {
   font-size: 13px;
 }
 .admin-table th {
-  font-weight: 500;
+  font-weight: 700;
   color: var(--color-muted);
   text-align: left;
   white-space: nowrap;
+  background: var(--color-paper-3);
 }
 .admin-table td,
 .admin-table th {
@@ -1400,7 +1485,10 @@ legend {
 }
 .admin-table th:first-child,
 .admin-table td:first-child {
-  padding-left: 0;
+  padding-left: var(--space-md);
+}
+.admin-table tr:hover td {
+  background: var(--color-paper-2);
 }
 .admin-table small {
   display: block;
@@ -1425,6 +1513,10 @@ legend {
   gap: var(--space-sm);
   flex-wrap: wrap;
   margin: var(--space-lg) 0;
+  padding: var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background: var(--color-paper);
 }
 .admin-filters input {
   flex: 1;
@@ -1557,16 +1649,19 @@ legend {
     gap: var(--space-lg);
   }
   .account-nav {
-    border-right: 0;
-    border-bottom: 1px solid var(--color-rule);
-    padding: 0 0 var(--space-md);
-    display: flex;
-    gap: var(--space-xs);
-    align-items: center;
-    flex-wrap: wrap;
+    position: static;
+    border: 1px solid var(--color-rule);
+    padding: var(--space-sm);
+    display: block;
+    overflow-x: auto;
   }
   .account-nav h2 {
     display: none;
+  }
+  .account-nav nav {
+    display: flex;
+    gap: var(--space-xs);
+    min-width: max-content;
   }
   .account-nav a,
   .account-nav button {
@@ -1576,9 +1671,8 @@ legend {
     font-size: 13px;
   }
   .account-nav form {
-    margin: 0 0 0 auto;
-    border: 0;
-    padding: 0;
+    margin: var(--space-xs) 0 0;
+    padding: var(--space-xs) 0 0;
   }
   .profile-layout {
     grid-template-columns: minmax(0, 1fr) 160px;
@@ -1604,8 +1698,15 @@ legend {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
   .auth-layout {
-    gap: var(--space-44);
+    gap: var(--space-md);
     margin-top: var(--space-44);
+  }
+  .auth-aside {
+    min-height: 470px;
+    padding: var(--space-32);
+  }
+  .auth-layout > .form-stack {
+    padding: var(--space-32);
   }
   .auth-aside h1 {
     font-size: 36px;
@@ -1652,7 +1753,12 @@ legend {
     align-items: flex-end;
   }
   .hero::after {
-    background: linear-gradient(0deg, var(--color-paper) 0%, oklch(12.5% 0.008 55 / 0.86) 42%, transparent 100%);
+    background: linear-gradient(
+      0deg,
+      var(--color-paper) 0%,
+      oklch(12.5% 0.008 55 / 0.86) 42%,
+      transparent 100%
+    );
   }
   .hero-backdrop img {
     object-position: center 25%;
@@ -1788,7 +1894,12 @@ legend {
     min-height: 510px;
   }
   .detail-hero::after {
-    background: linear-gradient(0deg, var(--color-paper) 0%, oklch(12.5% 0.008 55 / 0.88) 43%, transparent 100%);
+    background: linear-gradient(
+      0deg,
+      var(--color-paper) 0%,
+      oklch(12.5% 0.008 55 / 0.88) 43%,
+      transparent 100%
+    );
   }
   .detail-backdrop img {
     object-position: center 24%;
@@ -1815,13 +1926,16 @@ legend {
   }
   .auth-layout {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-36);
+    gap: var(--space-md);
     padding: 0 var(--space-lg);
     margin: var(--space-36) auto var(--space-56);
   }
   .auth-aside {
-    border-bottom: 1px solid var(--color-rule);
-    padding-bottom: var(--space-lg);
+    min-height: 0;
+    padding: var(--space-lg);
+  }
+  .auth-layout > .form-stack {
+    padding: var(--space-lg);
   }
   .auth-mark {
     margin-bottom: var(--space-20);
@@ -1858,6 +1972,10 @@ legend {
   }
   .account-nav button svg {
     width: 14px;
+  }
+  .account-content {
+    min-height: 0;
+    padding: var(--space-20);
   }
   .account-content h1 {
     font-size: 27px;

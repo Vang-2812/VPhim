@@ -114,6 +114,7 @@ export function WatchScreen({
     <>
       <div className="watch-title">
         <div>
+          <span className="watch-eyebrow">Đang xem</span>
           <h1>{movie.title}</h1>
           <p>
             {selection.episode.label} / {selection.server.label}
