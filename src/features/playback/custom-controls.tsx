@@ -55,6 +55,7 @@ export interface CustomControlsProps {
   isPipSupported?: boolean;
   videoFilter?: VideoFilterSettings;
   onVideoFilterChange?: (filter: VideoFilterSettings) => void;
+  isIdle?: boolean;
 }
 
 const PLAYBACK_RATES = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
@@ -79,6 +80,7 @@ export function CustomControls({
   isPipSupported = true,
   videoFilter = FILTER_PRESETS.none,
   onVideoFilterChange,
+  isIdle = false,
 }: CustomControlsProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsView, setSettingsView] = useState<"main" | "speed" | "filters">("main");
@@ -145,9 +147,12 @@ export function CustomControls({
   }, [showSettings]);
 
   const effectiveVolume = muted ? 0 : volume;
+  const isHidden = Boolean(isIdle && !showSettings && !isScrubbing);
 
   return (
-    <div className="player-controls-overlay">
+    <div
+      className={`player-controls-overlay ${isHidden ? "idle-hidden" : ""}`}
+    >
       {/* Scrubber / Timeline bar */}
       <div
         className="player-scrubber-container"

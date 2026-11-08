@@ -388,10 +388,18 @@ export function VideoPlayer({
 
   return (
     <div
-      className="video-stage"
+      className={`video-stage ${isIdle && isPlaying ? "idle-cursor" : ""}`}
       ref={containerRef}
       onMouseMove={resetIdleTimer}
+      onMouseDown={resetIdleTimer}
       onTouchStart={resetIdleTimer}
+      onTouchMove={resetIdleTimer}
+      onMouseLeave={() => {
+        if (isPlaying) {
+          if (idleTimer.current) clearTimeout(idleTimer.current);
+          setIsIdle(true);
+        }
+      }}
     >
       {error ? (
         <div className="player-error">
@@ -475,32 +483,31 @@ export function VideoPlayer({
               }
             }}
           />
-          <div className={isIdle ? "idle-hidden" : ""}>
-            <CustomControls
-              currentTime={currentTime}
-              duration={duration}
-              bufferedEnd={bufferedEnd}
-              isPlaying={isPlaying}
-              onPlayPause={handlePlayPause}
-              onSeek={handleSeek}
-              onRewind10={handleRewind10}
-              onForward10={handleForward10}
-              volume={volume}
-              muted={muted}
-              onVolumeChange={handleVolumeChange}
-              playbackRate={playbackRate}
-              onPlaybackRateChange={handlePlaybackRateChange}
-              onToggleFullscreen={handleToggleFullscreen}
-              isFullscreen={isFullscreen}
-              onTogglePip={handleTogglePip}
-              isPipSupported={
-                typeof document !== "undefined" &&
-                "pictureInPictureEnabled" in document
-              }
-              videoFilter={videoFilter}
-              onVideoFilterChange={handleVideoFilterChange}
-            />
-          </div>
+          <CustomControls
+            currentTime={currentTime}
+            duration={duration}
+            bufferedEnd={bufferedEnd}
+            isPlaying={isPlaying}
+            isIdle={isIdle && isPlaying}
+            onPlayPause={handlePlayPause}
+            onSeek={handleSeek}
+            onRewind10={handleRewind10}
+            onForward10={handleForward10}
+            volume={volume}
+            muted={muted}
+            onVolumeChange={handleVolumeChange}
+            playbackRate={playbackRate}
+            onPlaybackRateChange={handlePlaybackRateChange}
+            onToggleFullscreen={handleToggleFullscreen}
+            isFullscreen={isFullscreen}
+            onTogglePip={handleTogglePip}
+            isPipSupported={
+              typeof document !== "undefined" &&
+              "pictureInPictureEnabled" in document
+            }
+            videoFilter={videoFilter}
+            onVideoFilterChange={handleVideoFilterChange}
+          />
         </>
       )}
     </div>

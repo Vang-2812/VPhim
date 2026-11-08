@@ -73,4 +73,17 @@ describe("CustomControls", () => {
     fireEvent.click(rate15Btn);
     expect(defaultProps.onPlaybackRateChange).toHaveBeenCalledWith(1.5);
   });
+
+  it("applies idle-hidden class when isIdle is true and settings are closed", () => {
+    const { container } = render(
+      <CustomControls {...defaultProps} isIdle={true} />,
+    );
+    const overlay = container.querySelector(".player-controls-overlay");
+    expect(overlay).toHaveClass("idle-hidden");
+
+    // When settings is opened, idle-hidden should be removed
+    const settingsBtn = screen.getByRole("button", { name: /cài đặt/i });
+    fireEvent.click(settingsBtn);
+    expect(overlay).not.toHaveClass("idle-hidden");
+  });
 });
