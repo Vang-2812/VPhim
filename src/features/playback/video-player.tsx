@@ -61,16 +61,25 @@ export function VideoPlayer({
       hls: Hls | undefined;
     restored.current = false;
     setError("");
-    if (el.canPlayType("application/vnd.apple.mpegurl"))
-      el.src = selection.episode.hlsUrl;
-    else
-      void import("hls.js").then(({ default: HlsClass }) => {
+    // Chrome can advertise native HLS while struggling with some MPEG-TS
+    // streams. Prefer HLS.js/MSE; retain native playback for other platforms.
+    void import("hls.js")
+      .then(({ default: HlsClass }) => {
         if (cancelled) return;
         if (!HlsClass.isSupported()) {
-          errorHandlerRef.current("Trình duyệt chưa hỗ trợ nguồn HLS này.");
+          if (el.canPlayType("application/vnd.apple.mpegurl"))
+            el.src = selection.episode.hlsUrl!;
+          else
+            errorHandlerRef.current("Trình duyệt chưa hỗ trợ nguồn HLS này.");
           return;
         }
-        hls = new HlsClass();
+        hls = new HlsClass({
+          // Keep a small seek-back window and evict distant buffers after seeks.
+          backBufferLength: 30,
+          maxBufferLength: 30,
+          maxMaxBufferLength: 60,
+          frontBufferFlushThreshold: 60,
+        });
         hls.loadSource(selection.episode.hlsUrl!);
         hls.attachMedia(el);
         hls.on(HlsClass.Events.ERROR, (_event, data) => {
@@ -79,6 +88,12 @@ export function VideoPlayer({
               "Chưa phát được nguồn này. Thử lại hoặc đổi nguồn phát.",
             );
         });
+      })
+      .catch(() => {
+        if (!cancelled)
+          errorHandlerRef.current(
+            "Không tải được trình phát. Vui lòng thử lại.",
+          );
       });
     return () => {
       cancelled = true;
@@ -128,7 +143,8 @@ export function VideoPlayer({
         <p className="watch-status">
           {selection.episode.hlsUrl ? (
             <>
-              Đang phát từ nguồn nhúng dự phòng do nguồn trực tiếp tạm thời không khả dụng.{" "}
+              Đang phát từ nguồn nhúng dự phòng do nguồn trực tiếp tạm thời
+              không khả dụng.{" "}
               <button
                 type="button"
                 className="text-link"

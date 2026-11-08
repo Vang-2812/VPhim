@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     "Cách VPhim vận hành, quy định tài khoản, bảo vệ dữ liệu và tiếp nhận phản ánh bản quyền.",
 };
 const sections = [
-  ["van-hanh", "Cách VPhim vận hành"],
+  ["van-hanh", "Mục đích & cách vận hành"],
   ["ban-quyen", "Quyền tác giả & yêu cầu gỡ bỏ"],
   ["su-dung", "Quy định sử dụng"],
   ["tai-khoan", "Tài khoản & thành viên"],
@@ -33,7 +33,7 @@ export default function TermsPage() {
           ánh nội dung hoặc bảo vệ quyền của mình.
         </p>
         <p className="muted">
-          Cập nhật ngày 07/11/2026 · Áp dụng cho website VPhim
+          Cập nhật ngày 08/11/2026 · Áp dụng cho website VPhim
         </p>
       </header>
       <div className="legal-layout">
@@ -48,7 +48,14 @@ export default function TermsPage() {
         </nav>
         <article className="legal-content">
           <section id="van-hanh">
-            <h2>01. Cách VPhim vận hành</h2>
+            <h2>01. Mục đích & cách vận hành</h2>
+            <p>
+              VPhim là dự án cá nhân phục vụ học tập, thực hành lập trình và thử
+              nghiệm công nghệ xây dựng website. Đây không phải sản phẩm hay
+              dịch vụ thương mại và không được vận hành nhằm mục đích kiếm tiền.
+              VPhim không thu phí truy cập, bán gói thành viên hoặc triển khai
+              quảng cáo để tạo doanh thu cho dự án.
+            </p>
             <p>
               VPhim cung cấp giao diện khám phá phim và các tiện ích tài khoản.
               Danh mục, hình ảnh, thông tin tập và địa chỉ nguồn phát được lấy
@@ -188,9 +195,10 @@ export default function TermsPage() {
             <p>
               Các giới hạn trách nhiệm chỉ áp dụng trong phạm vi pháp luật cho
               phép, không loại trừ nghĩa vụ bắt buộc của đơn vị vận hành hoặc
-              quyền hợp pháp của người dùng. Việc sử dụng nguồn thứ ba hay không
-              lưu tệp video không tự miễn trừ nghĩa vụ về quyền tác giả và các
-              nghĩa vụ pháp lý khác.
+              quyền hợp pháp của người dùng. Mục đích học tập, thử nghiệm hoặc
+              phi thương mại không đồng nghĩa được cấp phép sử dụng tác phẩm.
+              Việc sử dụng nguồn thứ ba hay không lưu tệp video không tự miễn
+              trừ nghĩa vụ về quyền tác giả và các nghĩa vụ pháp lý khác.
             </p>
           </section>
           <section id="cap-nhat">
