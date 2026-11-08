@@ -7,7 +7,8 @@ import {
   History,
   UserRound,
   LogOut,
-  Shield,
+  LayoutDashboard,
+  Users,
 } from "lucide-react";
 import { signOut } from "@/features/auth/actions";
 export function AccountNav({ admin = false }: { admin?: boolean }) {
@@ -17,7 +18,12 @@ export function AccountNav({ admin = false }: { admin?: boolean }) {
       ["/tai-khoan/danh-sach", "Danh sách", ListPlus],
       ["/tai-khoan/xem-tiep", "Xem tiếp", History],
       ["/tai-khoan", "Tài khoản", UserRound],
-      ...(admin ? [["/admin/nguoi-dung", "Quản trị", Shield]] : []),
+      ...(admin
+        ? [
+            ["/admin", "Tổng quan", LayoutDashboard],
+            ["/admin/nguoi-dung", "Người dùng", Users],
+          ]
+        : []),
     ] as const;
   return (
     <aside className="account-nav">

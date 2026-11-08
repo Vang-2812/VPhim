@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
+import { RouteTracker } from "@/features/analytics/route-tracker";
 import { VPhimLogo } from "@/components/ui/logo";
 import Link from "next/link";
 import "./globals.css";
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body>
         <Suspense fallback={null}>
           <NavigationProgress />
+          <RouteTracker />
         </Suspense>
         <a className="skip-link" href="#main">
           Đến nội dung chính
