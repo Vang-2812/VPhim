@@ -1,9 +1,15 @@
 import Link from "next/link";
 import { Play, Film } from "lucide-react";
 import type { MovieSummary } from "./types";
-export function MovieGrid({ items }: { items: MovieSummary[] }) {
+export function MovieGrid({
+  items,
+  variant = "grid",
+}: {
+  items: MovieSummary[];
+  variant?: "grid" | "rail";
+}) {
   return (
-    <div className="movie-grid">
+    <div className={variant === "rail" ? "movie-grid movie-rail" : "movie-grid"}>
       {items.map((movie) => (
         <Link
           href={"/phim/" + movie.slug}
