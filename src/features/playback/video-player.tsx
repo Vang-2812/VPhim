@@ -134,13 +134,24 @@ export function VideoPlayer({
     }
   }, [initialPosition]);
 
+  // Set the audio volume on the video element using a perceptual curve
+  const applyVideoVolume = useCallback((val: number, isMuted: boolean) => {
+    if (!video.current) return;
+    if (isMuted || val <= 0) {
+      video.current.muted = true;
+      video.current.volume = 0;
+    } else {
+      video.current.muted = false;
+      // Perceptual audio curve: Math.sqrt(val) prevents silence/dead-zone at lower volume positions (e.g. 1/3)
+      const gain = Math.min(1, Math.max(0, Math.sqrt(val)));
+      video.current.volume = gain;
+    }
+  }, []);
+
   // Apply volume / muted whenever changed
   useEffect(() => {
-    if (video.current) {
-      video.current.volume = volume;
-      video.current.muted = muted;
-    }
-  }, [volume, muted]);
+    applyVideoVolume(volume, muted);
+  }, [volume, muted, applyVideoVolume]);
 
   // Fullscreen change listener
   useEffect(() => {
@@ -218,15 +229,16 @@ export function VideoPlayer({
     handleSeek(el.currentTime + 10);
   }, [handleSeek]);
 
-  const handleVolumeChange = useCallback((newVol: number, newMuted: boolean) => {
-    setVolume(newVol);
-    setMuted(newMuted);
-    setPlayerVolume(newVol, newMuted);
-    if (video.current) {
-      video.current.volume = newVol;
-      video.current.muted = newMuted;
-    }
-  }, []);
+  const handleVolumeChange = useCallback(
+    (newVol: number, newMuted: boolean) => {
+      const isMuted = newMuted || newVol <= 0;
+      setVolume(newVol);
+      setMuted(isMuted);
+      setPlayerVolume(newVol, isMuted);
+      applyVideoVolume(newVol, isMuted);
+    },
+    [applyVideoVolume],
+  );
 
   const handlePlaybackRateChange = useCallback((rate: number) => {
     setPlaybackRate(rate);
@@ -423,8 +435,7 @@ export function VideoPlayer({
               const el = video.current;
               if (el) {
                 setDuration(el.duration);
-                el.volume = volume;
-                el.muted = muted;
+                applyVideoVolume(volume, muted);
                 if (initialPosition && !restored.current) {
                   el.currentTime = resumePosition(
                     initialPosition.position,

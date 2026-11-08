@@ -210,7 +210,13 @@ export function CustomControls({
             <button
               type="button"
               className="player-btn"
-              onClick={() => onVolumeChange(volume, !muted)}
+              onClick={() => {
+                if (muted || effectiveVolume === 0) {
+                  onVolumeChange(volume === 0 ? 0.8 : volume, false);
+                } else {
+                  onVolumeChange(volume, true);
+                }
+              }}
               aria-label={muted || effectiveVolume === 0 ? "Bật tiếng" : "Tắt tiếng"}
               title="Tắt/Bật tiếng (M)"
             >
@@ -227,11 +233,15 @@ export function CustomControls({
               className="player-volume-slider"
               min="0"
               max="1"
-              step="0.05"
+              step="0.02"
               value={effectiveVolume}
               aria-label="Âm lượng"
+              onInput={(e) => {
+                const newVol = parseFloat(e.currentTarget.value);
+                onVolumeChange(newVol, false);
+              }}
               onChange={(e) => {
-                const newVol = parseFloat(e.target.value);
+                const newVol = parseFloat(e.currentTarget.value);
                 onVolumeChange(newVol, false);
               }}
             />

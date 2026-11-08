@@ -2479,12 +2479,58 @@ html {
   z-index: 100;
 }
 @media (max-width: 640px) {
+  /* Video Player Mobile Optimizations */
+  .player-controls-overlay {
+    padding: 6px 10px 8px;
+  }
+  .player-volume-slider {
+    display: none !important;
+  }
+  .player-brand {
+    display: none !important;
+  }
+  .player-controls-row {
+    gap: 4px;
+  }
+  .player-controls-left {
+    gap: 3px;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+  .player-controls-right {
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .player-btn {
+    padding: 4px;
+  }
+  .player-time-display {
+    font-size: 11px;
+    margin-left: 2px;
+    white-space: nowrap;
+  }
+
+  /* Watch Action Bar Mobile Optimizations - Hide text, icons only */
+  .action-bar-label {
+    display: none !important;
+  }
   .watch-action-bar {
-    gap: 12px;
-    padding: 8px 12px;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 8px 10px;
+    overflow-x: visible;
   }
   .action-bar-btn {
-    font-size: 12.5px;
-    padding: 4px 6px;
+    padding: 6px 8px;
+    justify-content: center;
+    font-size: 13px;
+  }
+  .auto-next-btn {
+    gap: 3px;
+  }
+  .auto-next-badge {
+    font-size: 9px;
+    padding: 1px 3px;
   }
 }

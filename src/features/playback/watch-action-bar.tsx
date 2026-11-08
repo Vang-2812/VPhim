@@ -10,6 +10,7 @@ import {
   SkipForward,
   Send,
   Check,
+  FastForward,
 } from "lucide-react";
 import { getLibraryState, setFavorite, setPlaylistMovie } from "@/features/library/actions";
 
@@ -116,18 +117,20 @@ export function WatchActionBar({
             onClick={handleFavorite}
             disabled={pending}
             aria-label={favorite ? "Đã yêu thích" : "Yêu thích"}
+            title={favorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
           >
             <Heart size={16} fill={favorite ? "currentColor" : "none"} />
-            <span>{favorite ? "Đã thích" : "Yêu thích"}</span>
+            <span className="action-bar-label">{favorite ? "Đã thích" : "Yêu thích"}</span>
           </button>
         ) : (
           <Link
             href={loginHref}
             className="action-bar-btn"
             aria-label="Đăng nhập để yêu thích"
+            title="Đăng nhập để yêu thích"
           >
             <Heart size={16} />
-            <span>Yêu thích</span>
+            <span className="action-bar-label">Yêu thích</span>
           </Link>
         )}
 
@@ -139,18 +142,20 @@ export function WatchActionBar({
               className="action-bar-btn"
               onClick={() => setShowPlaylists(!showPlaylists)}
               aria-label="Thêm vào danh sách"
+              title="Thêm vào danh sách phát"
             >
               <Plus size={16} />
-              <span>Thêm vào</span>
+              <span className="action-bar-label">Thêm vào</span>
             </button>
           ) : (
             <Link
               href={loginHref}
               className="action-bar-btn"
               aria-label="Đăng nhập để thêm vào danh sách"
+              title="Đăng nhập để thêm vào danh sách"
             >
               <Plus size={16} />
-              <span>Thêm vào</span>
+              <span className="action-bar-label">Thêm vào</span>
             </Link>
           )}
 
@@ -193,8 +198,10 @@ export function WatchActionBar({
           className="action-bar-btn auto-next-btn"
           onClick={() => onToggleAutoNext(!autoNext)}
           aria-label={`Chuyển tập tự động ${autoNext ? "đang bật" : "đang tắt"}`}
+          title={`Tự động chuyển tập: ${autoNext ? "BẬT" : "TẮT"}`}
         >
-          <span>Chuyển tập</span>
+          <FastForward size={15} />
+          <span className="action-bar-label">Chuyển tập</span>
           <span className={`auto-next-badge ${autoNext ? "on" : "off"}`}>
             {autoNext ? "ON" : "OFF"}
           </span>
@@ -206,18 +213,20 @@ export function WatchActionBar({
             href={prevHref}
             className="action-bar-btn"
             aria-label="Tập trước"
+            title="Tập trước"
           >
             <SkipBack size={16} />
-            <span>Tập trước</span>
+            <span className="action-bar-label">Tập trước</span>
           </Link>
         ) : (
           <span
             className="action-bar-btn disabled"
             aria-disabled="true"
             aria-label="Tập trước"
+            title="Không có tập trước"
           >
             <SkipBack size={16} />
-            <span>Tập trước</span>
+            <span className="action-bar-label">Tập trước</span>
           </span>
         )}
 
@@ -227,18 +236,20 @@ export function WatchActionBar({
             href={nextHref}
             className="action-bar-btn"
             aria-label="Tập tiếp theo"
+            title="Tập tiếp theo"
           >
             <SkipForward size={16} />
-            <span>Tập tiếp theo</span>
+            <span className="action-bar-label">Tập tiếp theo</span>
           </Link>
         ) : (
           <span
             className="action-bar-btn disabled"
             aria-disabled="true"
             aria-label="Tập tiếp theo"
+            title="Không có tập tiếp theo"
           >
             <SkipForward size={16} />
-            <span>Tập tiếp theo</span>
+            <span className="action-bar-label">Tập tiếp theo</span>
           </span>
         )}
 
@@ -248,9 +259,10 @@ export function WatchActionBar({
           className="action-bar-btn"
           onClick={handleShare}
           aria-label="Chia sẻ"
+          title="Chia sẻ liên kết phim"
         >
           <Send size={15} />
-          <span>Chia sẻ</span>
+          <span className="action-bar-label">Chia sẻ</span>
         </button>
       </div>
 
