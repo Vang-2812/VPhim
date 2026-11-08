@@ -13,7 +13,14 @@ import {
   Maximize,
   Minimize,
   PictureInPicture2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import {
+  type VideoFilterSettings,
+  FILTER_PRESETS,
+  PRESET_LABELS,
+} from "./filters";
 
 export function formatTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
@@ -46,6 +53,8 @@ export interface CustomControlsProps {
   isFullscreen?: boolean;
   onTogglePip?: () => void;
   isPipSupported?: boolean;
+  videoFilter?: VideoFilterSettings;
+  onVideoFilterChange?: (filter: VideoFilterSettings) => void;
 }
 
 const PLAYBACK_RATES = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
@@ -68,8 +77,11 @@ export function CustomControls({
   isFullscreen = false,
   onTogglePip,
   isPipSupported = true,
+  videoFilter = FILTER_PRESETS.none,
+  onVideoFilterChange,
 }: CustomControlsProps) {
   const [showSettings, setShowSettings] = useState(false);
+  const [settingsView, setSettingsView] = useState<"main" | "speed" | "filters">("main");
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverPosition, setHoverPosition] = useState<number>(0);
@@ -121,10 +133,13 @@ export function CustomControls({
     }
   };
 
-  // Close settings when clicking outside
+  // Close settings when clicking outside and reset to main view
   useEffect(() => {
     if (!showSettings) return;
-    const close = () => setShowSettings(false);
+    const close = () => {
+      setShowSettings(false);
+      setSettingsView("main");
+    };
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
   }, [showSettings]);
@@ -257,34 +272,271 @@ export function CustomControls({
           <span className="player-brand">VPhim</span>
 
           {/* Settings Menu */}
-          <div className="player-settings-wrapper" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="player-settings-wrapper"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               className="player-btn"
-              onClick={() => setShowSettings(!showSettings)}
-              aria-label="Cài đặt tốc độ phát"
-              title="Cài đặt tốc độ"
+              onClick={() => {
+                setShowSettings((prev) => !prev);
+                setSettingsView("main");
+              }}
+              aria-label="Cài đặt"
+              title="Cài đặt"
             >
               <Settings size={18} />
             </button>
             {showSettings && (
               <div className="player-settings-menu">
-                <div className="player-settings-header">Tốc độ phát</div>
-                {PLAYBACK_RATES.map((rate) => (
-                  <button
-                    key={rate}
-                    type="button"
-                    className={`player-settings-item ${
-                      playbackRate === rate ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      onPlaybackRateChange(rate);
-                      setShowSettings(false);
-                    }}
-                  >
-                    {rate === 1.0 ? "Chuẩn (1.0x)" : `${rate}x`}
-                  </button>
-                ))}
+                {settingsView === "main" && (
+                  <>
+                    <div className="player-settings-header">Cài đặt</div>
+                    <button
+                      type="button"
+                      className="player-settings-nav-item"
+                      onClick={() => setSettingsView("speed")}
+                    >
+                      <span className="player-settings-nav-label">
+                        Tốc độ phát
+                      </span>
+                      <span className="player-settings-nav-val">
+                        {playbackRate === 1.0 ? "Chuẩn" : `${playbackRate}x`}
+                        <ChevronRight size={14} />
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className="player-settings-nav-item"
+                      onClick={() => setSettingsView("filters")}
+                    >
+                      <span className="player-settings-nav-label">
+                        Bộ lọc hình ảnh
+                      </span>
+                      <span className="player-settings-nav-val">
+                        {PRESET_LABELS[videoFilter.preset] || "Mặc định"}
+                        <ChevronRight size={14} />
+                      </span>
+                    </button>
+                  </>
+                )}
+
+                {settingsView === "speed" && (
+                  <>
+                    <div className="player-settings-header with-back">
+                      <button
+                        type="button"
+                        className="player-settings-back-btn"
+                        onClick={() => setSettingsView("main")}
+                        aria-label="Quay lại cài đặt"
+                      >
+                        <ChevronLeft size={16} />
+                        <span>Tốc độ phát</span>
+                      </button>
+                    </div>
+                    <div className="player-settings-list">
+                      {PLAYBACK_RATES.map((rate) => (
+                        <button
+                          key={rate}
+                          type="button"
+                          className={`player-settings-item ${
+                            playbackRate === rate ? "active" : ""
+                          }`}
+                          onClick={() => {
+                            onPlaybackRateChange(rate);
+                            setShowSettings(false);
+                            setSettingsView("main");
+                          }}
+                        >
+                          {rate === 1.0 ? "Chuẩn (1.0x)" : `${rate}x`}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {settingsView === "filters" && (
+                  <>
+                    <div className="player-settings-header with-back">
+                      <button
+                        type="button"
+                        className="player-settings-back-btn"
+                        onClick={() => setSettingsView("main")}
+                        aria-label="Quay lại cài đặt"
+                      >
+                        <ChevronLeft size={16} />
+                        <span>Bộ lọc hình ảnh</span>
+                      </button>
+                    </div>
+                    <div className="player-filters-container">
+                      <div className="player-filter-presets">
+                        {(
+                          [
+                            "none",
+                            "vivid",
+                            "anime",
+                            "cinema",
+                            "night",
+                            "custom",
+                          ] as const
+                        ).map((presetKey) => {
+                          const isActive = videoFilter.preset === presetKey;
+                          return (
+                            <button
+                              key={presetKey}
+                              type="button"
+                              className={`player-filter-preset-btn ${
+                                isActive ? "active" : ""
+                              }`}
+                              onClick={() => {
+                                if (presetKey === "custom") {
+                                  onVideoFilterChange?.({
+                                    preset: "custom",
+                                    brightness: videoFilter.brightness,
+                                    contrast: videoFilter.contrast,
+                                    saturate: videoFilter.saturate,
+                                    sepia: videoFilter.sepia,
+                                    sharpen: videoFilter.sharpen,
+                                  });
+                                } else {
+                                  onVideoFilterChange?.(
+                                    FILTER_PRESETS[presetKey],
+                                  );
+                                }
+                              }}
+                            >
+                              {PRESET_LABELS[presetKey]}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {videoFilter.preset === "custom" && (
+                        <div className="player-filter-custom-controls">
+                          <div className="filter-slider-group">
+                            <label htmlFor="filter-brightness">
+                              <span>Độ sáng</span>
+                              <span className="filter-val">
+                                {videoFilter.brightness}%
+                              </span>
+                            </label>
+                            <input
+                              id="filter-brightness"
+                              type="range"
+                              min="70"
+                              max="140"
+                              step="1"
+                              value={videoFilter.brightness}
+                              aria-label="Độ sáng"
+                              onChange={(e) => {
+                                onVideoFilterChange?.({
+                                  ...videoFilter,
+                                  brightness: parseInt(e.target.value, 10),
+                                });
+                              }}
+                            />
+                          </div>
+
+                          <div className="filter-slider-group">
+                            <label htmlFor="filter-contrast">
+                              <span>Độ tương phản</span>
+                              <span className="filter-val">
+                                {videoFilter.contrast}%
+                              </span>
+                            </label>
+                            <input
+                              id="filter-contrast"
+                              type="range"
+                              min="70"
+                              max="140"
+                              step="1"
+                              value={videoFilter.contrast}
+                              aria-label="Độ tương phản"
+                              onChange={(e) => {
+                                onVideoFilterChange?.({
+                                  ...videoFilter,
+                                  contrast: parseInt(e.target.value, 10),
+                                });
+                              }}
+                            />
+                          </div>
+
+                          <div className="filter-slider-group">
+                            <label htmlFor="filter-saturate">
+                              <span>Độ bão hòa</span>
+                              <span className="filter-val">
+                                {videoFilter.saturate}%
+                              </span>
+                            </label>
+                            <input
+                              id="filter-saturate"
+                              type="range"
+                              min="50"
+                              max="180"
+                              step="1"
+                              value={videoFilter.saturate}
+                              aria-label="Độ bão hòa"
+                              onChange={(e) => {
+                                onVideoFilterChange?.({
+                                  ...videoFilter,
+                                  saturate: parseInt(e.target.value, 10),
+                                });
+                              }}
+                            />
+                          </div>
+
+                          <div className="filter-sharpen-group">
+                            <span className="filter-sharpen-label">
+                              Tăng độ nét
+                            </span>
+                            <div className="filter-sharpen-buttons">
+                              {(["off", "low", "high"] as const).map((lvl) => (
+                                <button
+                                  key={lvl}
+                                  type="button"
+                                  className={`filter-sharpen-btn ${
+                                    videoFilter.sharpen === lvl ? "active" : ""
+                                  }`}
+                                  onClick={() => {
+                                    onVideoFilterChange?.({
+                                      ...videoFilter,
+                                      sharpen: lvl,
+                                    });
+                                  }}
+                                >
+                                  {lvl === "off"
+                                    ? "Tắt"
+                                    : lvl === "low"
+                                      ? "Vừa"
+                                      : "Cao"}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="filter-reset-btn"
+                            onClick={() => {
+                              onVideoFilterChange?.({
+                                preset: "custom",
+                                brightness: 100,
+                                contrast: 100,
+                                saturate: 100,
+                                sepia: 0,
+                                sharpen: "off",
+                              });
+                            }}
+                          >
+                            <RotateCcw size={12} />
+                            <span>Đặt lại</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>

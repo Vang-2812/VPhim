@@ -1,3 +1,9 @@
+import {
+  type VideoFilterSettings,
+  FILTER_PRESETS,
+  clampFilterSettings,
+} from "./filters";
+
 export interface PlayerPreferences {
   volume: number;
   muted: boolean;
@@ -8,6 +14,7 @@ const STORAGE_KEYS = {
   volume: "vphim_player_volume",
   muted: "vphim_player_muted",
   autoNext: "vphim_auto_next",
+  videoFilter: "vphim_video_filter",
 } as const;
 
 export function getPlayerPreferences(): PlayerPreferences {
@@ -54,4 +61,40 @@ export function setPlayerAutoNext(autoNext: boolean): void {
     STORAGE_KEYS.autoNext,
     autoNext ? "true" : "false",
   );
+}
+
+export function getVideoFilterSettings(): VideoFilterSettings {
+  if (typeof window === "undefined" || !window.localStorage) {
+    return { ...FILTER_PRESETS.none };
+  }
+  const raw = window.localStorage.getItem(STORAGE_KEYS.videoFilter);
+  if (!raw) {
+    return { ...FILTER_PRESETS.none };
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") {
+      return { ...FILTER_PRESETS.none };
+    }
+    const validPresets = [
+      "none",
+      "vivid",
+      "anime",
+      "cinema",
+      "night",
+      "custom",
+    ];
+    if (!validPresets.includes(parsed.preset)) {
+      return { ...FILTER_PRESETS.none };
+    }
+    return clampFilterSettings(parsed as VideoFilterSettings);
+  } catch {
+    return { ...FILTER_PRESETS.none };
+  }
+}
+
+export function setVideoFilterSettings(settings: VideoFilterSettings): void {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  const clamped = clampFilterSettings(settings);
+  window.localStorage.setItem(STORAGE_KEYS.videoFilter, JSON.stringify(clamped));
 }

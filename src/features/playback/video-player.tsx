@@ -5,7 +5,14 @@ import type Hls from "hls.js";
 import type { PlaybackSelection } from "./selection";
 import type { PlaybackSample } from "./types";
 import { resumePosition } from "./progress-client";
-import { getPlayerPreferences, setPlayerVolume } from "./storage";
+import {
+  getPlayerPreferences,
+  setPlayerVolume,
+  getVideoFilterSettings,
+  setVideoFilterSettings,
+} from "./storage";
+import { type VideoFilterSettings, getVideoFilterCSS } from "./filters";
+import { VideoFilterDefs } from "./video-filter-defs";
 import { CustomControls } from "./custom-controls";
 
 export function VideoPlayer({
@@ -41,6 +48,23 @@ export function VideoPlayer({
   // Persistent volume and mute
   const [volume, setVolume] = useState(() => getPlayerPreferences().volume);
   const [muted, setMuted] = useState(() => getPlayerPreferences().muted);
+
+  // Video filter settings
+  const [videoFilter, setVideoFilter] = useState<VideoFilterSettings>(() =>
+    getVideoFilterSettings(),
+  );
+
+  const handleVideoFilterChange = useCallback(
+    (newFilter: VideoFilterSettings) => {
+      setVideoFilter(newFilter);
+      setVideoFilterSettings(newFilter);
+    },
+    [],
+  );
+
+  const filterCss = getVideoFilterCSS(videoFilter);
+  const filterStyle =
+    filterCss !== "none" ? { filter: filterCss } : undefined;
 
   sampleCallback.current = onSample;
 
@@ -316,8 +340,10 @@ export function VideoPlayer({
   if (embed)
     return (
       <>
+        <VideoFilterDefs />
         <div className="video-stage" ref={containerRef}>
           <iframe
+            style={filterStyle}
             src={selection.episode.embedUrl!}
             title={"Xem " + selection.episode.label}
             allow="fullscreen; picture-in-picture"
@@ -400,8 +426,10 @@ export function VideoPlayer({
         </div>
       ) : (
         <>
+          <VideoFilterDefs />
           <video
             ref={video}
+            style={filterStyle}
             poster={posterUrl || undefined}
             playsInline
             preload="metadata"
@@ -469,6 +497,8 @@ export function VideoPlayer({
                 typeof document !== "undefined" &&
                 "pictureInPictureEnabled" in document
               }
+              videoFilter={videoFilter}
+              onVideoFilterChange={handleVideoFilterChange}
             />
           </div>
         </>

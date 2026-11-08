@@ -66,6 +66,9 @@ describe("CustomControls", () => {
     const settingsBtn = screen.getByRole("button", { name: /cài đặt/i });
     fireEvent.click(settingsBtn);
 
+    const speedNavBtn = screen.getByText("Tốc độ phát");
+    fireEvent.click(speedNavBtn);
+
     const rate15Btn = screen.getByRole("button", { name: "1.5x" });
     fireEvent.click(rate15Btn);
     expect(defaultProps.onPlaybackRateChange).toHaveBeenCalledWith(1.5);
