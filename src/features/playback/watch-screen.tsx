@@ -2,13 +2,16 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import type { MovieDetail } from "@/features/movies/types";
 import type { PlaybackSelection } from "./selection";
 import { VideoPlayer } from "./video-player";
+import { WatchActionBar } from "./watch-action-bar";
+import { getPlayerPreferences, setPlayerAutoNext } from "./storage";
 import { beginWatch, saveProgress } from "./actions";
 import { createProgressWriter } from "./progress-client";
 import type { PlaybackSample } from "./types";
+
 export function WatchScreen({
   movie,
   selection,
@@ -28,8 +31,31 @@ export function WatchScreen({
       position: number | null;
       completed: boolean;
     } | null>(null),
-    writer = useRef<ReturnType<typeof createProgressWriter> | null>(null);
+    [autoNext, setAutoNext] = useState(() => getPlayerPreferences().autoNext),
+    writer = useRef<ReturnType<typeof createProgressWriter> | null>(null),
+    autoNextRef = useRef(autoNext);
+
+  autoNextRef.current = autoNext;
   const sourceKey = selection.server.key + "/" + selection.episode.key;
+
+  const index = selection.server.episodes.findIndex(
+    (e) => e.key === selection.episode.key,
+  );
+  function href(episodeKey: string, serverKey = selection.server.key) {
+    return (
+      "/xem/" +
+      movie.slug +
+      "?" +
+      new URLSearchParams({ server: serverKey, episode: episodeKey })
+    );
+  }
+  const prevHref =
+    index > 0 ? href(selection.server.episodes[index - 1].key) : null;
+  const nextHref =
+    index < selection.server.episodes.length - 1
+      ? href(selection.server.episodes[index + 1].key)
+      : null;
+
   useEffect(() => {
     if (!member) return;
     let active = true;
@@ -95,21 +121,17 @@ export function WatchScreen({
     selection.server.key,
     selection.mode,
   ]);
+
   const sample = useCallback(
-    (s: PlaybackSample) => writer.current?.sample(s),
-    [],
+    (s: PlaybackSample) => {
+      writer.current?.sample(s);
+      if (s.ended && autoNextRef.current && nextHref) {
+        router.push(nextHref);
+      }
+    },
+    [nextHref, router],
   );
-  const index = selection.server.episodes.findIndex(
-    (e) => e.key === selection.episode.key,
-  );
-  function href(episodeKey: string, serverKey = selection.server.key) {
-    return (
-      "/xem/" +
-      movie.slug +
-      "?" +
-      new URLSearchParams({ server: serverKey, episode: episodeKey })
-    );
-  }
+
   return (
     <>
       <div className="watch-title">
@@ -134,28 +156,17 @@ export function WatchScreen({
             initialPosition={initial}
             onSample={sample}
           />
-          <div className="watch-bottom">
-            {index > 0 ? (
-              <Link
-                className="button secondary"
-                href={href(selection.server.episodes[index - 1].key)}
-              >
-                <ChevronLeft size={16} />
-                Tập trước
-              </Link>
-            ) : (
-              <span />
-            )}
-            {index < selection.server.episodes.length - 1 && (
-              <Link
-                className="button secondary"
-                href={href(selection.server.episodes[index + 1].key)}
-              >
-                Tập sau
-                <ChevronRight size={16} />
-              </Link>
-            )}
-          </div>
+          <WatchActionBar
+            slug={movie.slug}
+            member={member}
+            prevHref={prevHref}
+            nextHref={nextHref}
+            autoNext={autoNext}
+            onToggleAutoNext={(val) => {
+              setAutoNext(val);
+              setPlayerAutoNext(val);
+            }}
+          />
           <p className="watch-status" role="status">
             {notice}
             {!member && (

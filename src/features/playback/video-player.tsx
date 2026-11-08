@@ -1,9 +1,12 @@
 "use client";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import type Hls from "hls.js";
 import type { PlaybackSelection } from "./selection";
 import type { PlaybackSample } from "./types";
 import { resumePosition } from "./progress-client";
+import { getPlayerPreferences, setPlayerVolume } from "./storage";
+import { CustomControls } from "./custom-controls";
 
 export function VideoPlayer({
   selection,
@@ -16,13 +19,28 @@ export function VideoPlayer({
   initialPosition: { position: number | null; completed: boolean } | null;
   onSample: (s: PlaybackSample) => void;
 }) {
-  const video = useRef<HTMLVideoElement>(null),
+  const containerRef = useRef<HTMLDivElement>(null),
+    video = useRef<HTMLVideoElement>(null),
     sampleCallback = useRef(onSample),
     [error, setError] = useState(""),
     [embed, setEmbed] = useState(selection.mode === "embed"),
     [retry, setRetry] = useState(0),
     restored = useRef(false),
     fallbackTriggered = useRef(false);
+
+  // Playback state
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [bufferedEnd, setBufferedEnd] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isIdle, setIsIdle] = useState(false);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Persistent volume and mute
+  const [volume, setVolume] = useState(() => getPlayerPreferences().volume);
+  const [muted, setMuted] = useState(() => getPlayerPreferences().muted);
 
   sampleCallback.current = onSample;
 
@@ -53,6 +71,7 @@ export function VideoPlayer({
   const errorHandlerRef = useRef(handleError);
   errorHandlerRef.current = handleError;
 
+  // HLS stream management
   useEffect(() => {
     if (embed) return;
     const el = video.current;
@@ -61,8 +80,7 @@ export function VideoPlayer({
       hls: Hls | undefined;
     restored.current = false;
     setError("");
-    // Chrome can advertise native HLS while struggling with some MPEG-TS
-    // streams. Prefer HLS.js/MSE; retain native playback for other platforms.
+
     void import("hls.js")
       .then(({ default: HlsClass }) => {
         if (cancelled) return;
@@ -74,7 +92,6 @@ export function VideoPlayer({
           return;
         }
         hls = new HlsClass({
-          // Keep a small seek-back window and evict distant buffers after seeks.
           backBufferLength: 30,
           maxBufferLength: 30,
           maxMaxBufferLength: 60,
@@ -104,6 +121,7 @@ export function VideoPlayer({
     };
   }, [selection.episode.hlsUrl, embed, retry]);
 
+  // Initial resume position
   useEffect(() => {
     const el = video.current;
     if (el && initialPosition && el.readyState >= 1 && !restored.current) {
@@ -116,6 +134,46 @@ export function VideoPlayer({
     }
   }, [initialPosition]);
 
+  // Apply volume / muted whenever changed
+  useEffect(() => {
+    if (video.current) {
+      video.current.volume = volume;
+      video.current.muted = muted;
+    }
+  }, [volume, muted]);
+
+  // Fullscreen change listener
+  useEffect(() => {
+    const onFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  // Idle timer to auto-hide controls
+  const resetIdleTimer = useCallback(() => {
+    setIsIdle(false);
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    if (isPlaying) {
+      idleTimer.current = setTimeout(() => {
+        setIsIdle(true);
+      }, 3000);
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      setIsIdle(false);
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+    } else {
+      resetIdleTimer();
+    }
+    return () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+    };
+  }, [isPlaying, resetIdleTimer]);
+
   function emit(reason: PlaybackSample["reason"]) {
     const el = video.current;
     if (el && Number.isFinite(el.duration) && el.duration > 0)
@@ -127,10 +185,126 @@ export function VideoPlayer({
       });
   }
 
+  // Playback control actions
+  const handlePlayPause = useCallback(() => {
+    const el = video.current;
+    if (!el) return;
+    if (el.paused) {
+      void el.play();
+    } else {
+      el.pause();
+    }
+  }, []);
+
+  const handleSeek = useCallback(
+    (time: number) => {
+      const el = video.current;
+      if (!el || !Number.isFinite(el.duration)) return;
+      el.currentTime = Math.max(0, Math.min(el.duration, time));
+      setCurrentTime(el.currentTime);
+    },
+    [],
+  );
+
+  const handleRewind10 = useCallback(() => {
+    const el = video.current;
+    if (!el) return;
+    handleSeek(el.currentTime - 10);
+  }, [handleSeek]);
+
+  const handleForward10 = useCallback(() => {
+    const el = video.current;
+    if (!el) return;
+    handleSeek(el.currentTime + 10);
+  }, [handleSeek]);
+
+  const handleVolumeChange = useCallback((newVol: number, newMuted: boolean) => {
+    setVolume(newVol);
+    setMuted(newMuted);
+    setPlayerVolume(newVol, newMuted);
+    if (video.current) {
+      video.current.volume = newVol;
+      video.current.muted = newMuted;
+    }
+  }, []);
+
+  const handlePlaybackRateChange = useCallback((rate: number) => {
+    setPlaybackRate(rate);
+    if (video.current) {
+      video.current.playbackRate = rate;
+    }
+  }, []);
+
+  const handleToggleFullscreen = useCallback(() => {
+    const stage = containerRef.current;
+    if (!stage) return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else if (stage.requestFullscreen) {
+      void stage.requestFullscreen();
+    }
+  }, []);
+
+  const handleTogglePip = useCallback(() => {
+    const el = video.current;
+    if (!el) return;
+    if (document.pictureInPictureElement) {
+      void document.exitPictureInPicture();
+    } else if (el.requestPictureInPicture) {
+      void el.requestPictureInPicture();
+    }
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      const isInput =
+        activeEl instanceof HTMLInputElement ||
+        activeEl instanceof HTMLTextAreaElement ||
+        activeEl instanceof HTMLSelectElement ||
+        activeEl?.getAttribute("contenteditable") === "true";
+      if (isInput) return;
+
+      if (e.code === "Space" || e.key === "k" || e.key === "K") {
+        e.preventDefault();
+        handlePlayPause();
+      } else if (e.key === "ArrowLeft" || e.key === "j" || e.key === "J") {
+        e.preventDefault();
+        handleRewind10();
+      } else if (e.key === "ArrowRight" || e.key === "l" || e.key === "L") {
+        e.preventDefault();
+        handleForward10();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        handleVolumeChange(Math.min(1, volume + 0.1), false);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        handleVolumeChange(Math.max(0, volume - 0.1), false);
+      } else if (e.key === "m" || e.key === "M") {
+        e.preventDefault();
+        handleVolumeChange(volume, !muted);
+      } else if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        handleToggleFullscreen();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    volume,
+    muted,
+    handlePlayPause,
+    handleRewind10,
+    handleForward10,
+    handleVolumeChange,
+    handleToggleFullscreen,
+  ]);
+
   if (embed)
     return (
       <>
-        <div className="video-stage">
+        <div className="video-stage" ref={containerRef}>
           <iframe
             src={selection.episode.embedUrl!}
             title={"Xem " + selection.episode.label}
@@ -175,7 +349,12 @@ export function VideoPlayer({
     );
 
   return (
-    <div className="video-stage">
+    <div
+      className="video-stage"
+      ref={containerRef}
+      onMouseMove={resetIdleTimer}
+      onTouchStart={resetIdleTimer}
+    >
       {error ? (
         <div className="player-error">
           <p role="alert">{error}</p>
@@ -208,27 +387,80 @@ export function VideoPlayer({
           </div>
         </div>
       ) : (
-        <video
-          ref={video}
-          poster={posterUrl || undefined}
-          controls
-          playsInline
-          preload="metadata"
-          onTimeUpdate={() => emit("time")}
-          onPause={() => emit("pause")}
-          onEnded={() => emit("ended")}
-          onError={() => handleError("Nguồn phát tạm thời không khả dụng.")}
-          onLoadedMetadata={() => {
-            if (video.current && initialPosition && !restored.current) {
-              video.current.currentTime = resumePosition(
-                initialPosition.position,
-                video.current.duration,
-                initialPosition.completed,
-              );
-              restored.current = true;
-            }
-          }}
-        />
+        <>
+          <video
+            ref={video}
+            poster={posterUrl || undefined}
+            playsInline
+            preload="metadata"
+            onClick={handlePlayPause}
+            onPlay={() => {
+              setIsPlaying(true);
+              resetIdleTimer();
+            }}
+            onPause={() => {
+              setIsPlaying(false);
+              emit("pause");
+              setIsIdle(false);
+            }}
+            onEnded={() => {
+              setIsPlaying(false);
+              emit("ended");
+              setIsIdle(false);
+            }}
+            onTimeUpdate={() => {
+              const el = video.current;
+              if (el) {
+                setCurrentTime(el.currentTime);
+                if (el.buffered.length > 0) {
+                  setBufferedEnd(el.buffered.end(el.buffered.length - 1));
+                }
+              }
+              emit("time");
+            }}
+            onError={() => handleError("Nguồn phát tạm thời không khả dụng.")}
+            onLoadedMetadata={() => {
+              const el = video.current;
+              if (el) {
+                setDuration(el.duration);
+                el.volume = volume;
+                el.muted = muted;
+                if (initialPosition && !restored.current) {
+                  el.currentTime = resumePosition(
+                    initialPosition.position,
+                    el.duration,
+                    initialPosition.completed,
+                  );
+                  restored.current = true;
+                }
+              }
+            }}
+          />
+          <div className={isIdle ? "idle-hidden" : ""}>
+            <CustomControls
+              currentTime={currentTime}
+              duration={duration}
+              bufferedEnd={bufferedEnd}
+              isPlaying={isPlaying}
+              onPlayPause={handlePlayPause}
+              onSeek={handleSeek}
+              onRewind10={handleRewind10}
+              onForward10={handleForward10}
+              volume={volume}
+              muted={muted}
+              onVolumeChange={handleVolumeChange}
+              playbackRate={playbackRate}
+              onPlaybackRateChange={handlePlaybackRateChange}
+              onToggleFullscreen={handleToggleFullscreen}
+              isFullscreen={isFullscreen}
+              onTogglePip={handleTogglePip}
+              isPipSupported={
+                typeof document !== "undefined" &&
+                "pictureInPictureEnabled" in document
+              }
+            />
+          </div>
+        </>
       )}
     </div>
   );
