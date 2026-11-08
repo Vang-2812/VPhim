@@ -3,6 +3,7 @@ import { UserRound } from "lucide-react";
 import { getOptionalMember } from "@/features/auth/context.server";
 import { VPhimLogo } from "@/components/ui/logo";
 import { HeaderSearch } from "./header-search";
+import { SiteNav, SiteNavFallback } from "./site-nav";
 import { Suspense } from "react";
 async function HeaderAccount() {
   const member = await getOptionalMember();
@@ -23,12 +24,9 @@ export function SiteHeader() {
         <Link href="/" className="wordmark" aria-label="VPhim trang chủ">
           <VPhimLogo size={28} />
         </Link>
-        <nav className="desktop-nav" aria-label="Điều hướng chính">
-          <Link href="/kham-pha">Khám phá</Link>
-          <Link href="/kham-pha?type=phim-le">Phim lẻ</Link>
-          <Link href="/kham-pha?type=phim-bo">Phim bộ</Link>
-          <Link href="/kham-pha?type=hoat-hinh">Hoạt hình</Link>
-        </nav>
+        <Suspense fallback={<SiteNavFallback />}>
+          <SiteNav />
+        </Suspense>
         <div className="header-actions">
           <HeaderSearch />
           <Suspense
@@ -43,12 +41,9 @@ export function SiteHeader() {
           </Suspense>
         </div>
       </div>
-      <nav className="mobile-nav" aria-label="Điều hướng trên điện thoại">
-        <Link href="/kham-pha">Khám phá</Link>
-        <Link href="/kham-pha?type=phim-le">Phim lẻ</Link>
-        <Link href="/kham-pha?type=phim-bo">Phim bộ</Link>
-        <Link href="/kham-pha?type=hoat-hinh">Hoạt hình</Link>
-      </nav>
+      <Suspense fallback={<SiteNavFallback mobile />}>
+        <SiteNav mobile />
+      </Suspense>
     </header>
   );
 }

@@ -22,6 +22,7 @@ export function HeaderSearch(): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<SearchState>({ kind: "idle", items: [] });
   const root = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
   const keyword = value.trim();
 
   useEffect(() => {
@@ -32,7 +33,10 @@ export function HeaderSearch(): React.JSX.Element {
       try {
         const response = await fetch(
           "/api/search-suggestions?keyword=" + encodeURIComponent(keyword),
-          { signal: controller.signal, headers: { accept: "application/json" } },
+          {
+            signal: controller.signal,
+            headers: { accept: "application/json" },
+          },
         );
         const data = (await response.json()) as {
           items?: Suggestion[];
@@ -74,9 +78,19 @@ export function HeaderSearch(): React.JSX.Element {
 
   const showDropdown = open && keyword.length >= 2;
   return (
-    <div className="header-search" ref={root}>
+    <div
+      className="header-search"
+      ref={root}
+      onKeyDown={(event) => {
+        if (event.key !== "Escape" || !open) return;
+        event.preventDefault();
+        input.current?.focus();
+        setOpen(false);
+      }}
+    >
       <form action="/kham-pha" method="get" role="search" autoComplete="off">
         <input
+          ref={input}
           type="search"
           name="keyword"
           value={value}
@@ -89,17 +103,16 @@ export function HeaderSearch(): React.JSX.Element {
             const next = event.target.value;
             setValue(next);
             setOpen(next.trim().length >= 2);
-            setState(
-              next.trim().length >= 2
-                ? { kind: "loading", items: [] }
-                : { kind: "idle", items: [] },
-            );
+            if (next.trim() !== keyword) {
+              setState(
+                next.trim().length >= 2
+                  ? { kind: "loading", items: [] }
+                  : { kind: "idle", items: [] },
+              );
+            }
           }}
           onFocus={() => {
             if (keyword.length >= 2) setOpen(true);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") setOpen(false);
           }}
         />
         <button type="submit" aria-label="Tìm kiếm" title="Tìm kiếm">
@@ -123,7 +136,10 @@ export function HeaderSearch(): React.JSX.Element {
             <ul>
               {state.items.map((movie) => (
                 <li key={movie.slug}>
-                  <Link href={"/phim/" + movie.slug} onClick={() => setOpen(false)}>
+                  <Link
+                    href={"/phim/" + movie.slug}
+                    onClick={() => setOpen(false)}
+                  >
                     {movie.posterUrl ? (
                       <img src={movie.posterUrl} alt="" loading="lazy" />
                     ) : (
@@ -134,7 +150,9 @@ export function HeaderSearch(): React.JSX.Element {
                     <span>
                       <strong>{movie.title}</strong>
                       <small>
-                        {[movie.year, movie.quality].filter(Boolean).join(" · ")}
+                        {[movie.year, movie.quality]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </small>
                     </span>
                   </Link>
