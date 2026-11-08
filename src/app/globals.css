@@ -2144,3 +2144,203 @@ html {
     grid-auto-columns: min(79vw, 290px);
   }
 }
+
+
+/* Custom Video Player & Action Bar */
+.video-stage {
+  position: relative;
+}
+.player-controls-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.88) 0%,
+    rgba(0, 0, 0, 0.45) 60%,
+    transparent 100%
+  );
+  padding: 10px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+  user-select: none;
+}
+.player-controls-overlay.idle-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.player-scrubber-container {
+  width: 100%;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+.player-scrubber-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.22);
+  position: relative;
+  transition: height 0.15s ease;
+}
+.player-scrubber-container:hover .player-scrubber-track {
+  height: 6px;
+}
+.player-scrubber-buffer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.38);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.player-scrubber-played {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: var(--color-accent, #f59e0b);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.player-scrubber-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-accent, #f59e0b);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+  transition: transform 0.15s ease;
+  pointer-events: none;
+}
+.player-scrubber-container:hover .player-scrubber-thumb {
+  transform: translate(-50%, -50%) scale(1);
+}
+.player-scrubber-tooltip {
+  position: absolute;
+  bottom: 14px;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.player-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.player-controls-left,
+.player-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.player-btn {
+  background: transparent;
+  border: 0;
+  color: #e5e7eb;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.player-btn:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+.player-btn-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  font-weight: 800;
+  pointer-events: none;
+}
+.player-volume-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.player-volume-slider {
+  width: 58px;
+  height: 4px;
+  accent-color: var(--color-accent, #f59e0b);
+  cursor: pointer;
+}
+.player-time-display {
+  font-size: 12px;
+  color: #d1d5db;
+  font-variant-numeric: tabular-nums;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+.player-brand {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-accent, #f59e0b);
+  letter-spacing: 0.5px;
+  margin-right: 6px;
+}
+.player-settings-wrapper {
+  position: relative;
+}
+.player-settings-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background: #18191f;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  padding: 6px;
+  min-width: 130px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  z-index: 25;
+}
+.player-settings-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  padding: 4px 8px;
+  letter-spacing: 0.5px;
+}
+.player-settings-item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: #d1d5db;
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.player-settings-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.player-settings-item.active {
+  color: var(--color-accent, #f59e0b);
+  font-weight: 700;
+}
