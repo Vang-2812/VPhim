@@ -14,10 +14,25 @@ create index if not exists page_visits_visitor_date_idx on public.page_visits(cr
 alter table public.page_visits enable row level security;
 revoke all on public.page_visits from anon, authenticated;
 grant insert on public.page_visits to anon, authenticated;
+grant select on public.page_visits to authenticated;
 grant all on public.page_visits to service_role;
 
-drop policy if exists page_visits_insert_all on public.page_visits;
-create policy page_visits_insert_all on public.page_visits for insert to anon, authenticated with check(true);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies 
+    where schemaname = 'public' and tablename = 'page_visits' and policyname = 'page_visits_insert_all'
+  ) then
+    create policy page_visits_insert_all on public.page_visits for insert to anon, authenticated with check(true);
+  end if;
+
+  if not exists (
+    select 1 from pg_policies 
+    where schemaname = 'public' and tablename = 'page_visits' and policyname = 'page_visits_select_admin'
+  ) then
+    create policy page_visits_select_admin on public.page_visits for select to authenticated using (private.is_admin((select auth.uid())));
+  end if;
+end $$;
 
 create or replace function public.record_page_visit(
   p_path text,
@@ -54,7 +69,7 @@ declare
   v_device_breakdown jsonb;
   v_top_movies jsonb;
   v_top_pages jsonb;
-  v_start_of_today timestamptz := date_trunc('day', timezone('Asia/Ho_Chi_Minh', now()));
+  v_start_of_today timestamptz := timezone('Asia/Ho_Chi_Minh', date_trunc('day', timezone('Asia/Ho_Chi_Minh', now())));
 begin
   if actor is null or not private.is_admin(actor) then
     raise exception 'Admin required' using errcode='42501';
@@ -148,3 +163,5 @@ end$$;
 
 revoke all on function public.admin_get_analytics() from public, anon;
 grant execute on function public.admin_get_analytics() to authenticated;
+
+notify pgrst, 'reload schema';
